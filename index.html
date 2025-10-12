@@ -1,11 +1,551 @@
 <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเบิกผ้าเช็ดตัว</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .loading {
+            display: none;
+        }
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-2">🏨 ระบบเบิกผ้าเช็ดตัว</h1>
+            <p class="text-gray-600">กรอกข้อมูลเพื่อบันทึกการเบิกผ้าเช็ดตัว</p>
+        </div>
 
-<html>
-   <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-      <base target="_top">
-   </head>
-   <body>
-      <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://www.appsheet.com/start/68d5c39e-d52d-4bde-85c0-6c1f58b5a2be"></iframe>
-   </body>
+        <!-- Main Form -->
+        <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+            <form id="towelForm" class="space-y-8">
+                <!-- Top Row: Room Number & Customer Name -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Room Number -->
+                    <div>
+                        <label for="roomNumber" class="block text-sm font-semibold text-gray-700 mb-2">
+                            🏠 เลขห้อง
+                        </label>
+                        <input 
+                            type="text" 
+                            id="roomNumber" 
+                            name="roomNumber"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
+                            placeholder="กรอกเลขห้อง เช่น 101, 205 (หรือเว้นว่างถ้าไม่รู้)"
+                        >
+                        <div id="roomWarning" class="mt-2 text-sm text-red-600 hidden">
+                            ⚠️ เลขห้องนี้มีการบันทึกแล้วในวันนี้
+                        </div>
+                    </div>
+
+                    <!-- Customer Name -->
+                    <div>
+                        <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
+                            👤 ชื่อลูกค้า <span class="text-gray-500 text-xs">(กรอกเมื่อไม่รู้เลขห้อง)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="customerName" 
+                            name="customerName"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
+                            placeholder="กรอกชื่อลูกค้า (ไม่บังคับ)"
+                        >
+                        <div id="customerNameRequired" class="mt-2 text-sm text-orange-600 hidden">
+                            💡 กรุณากรอกชื่อลูกค้าเมื่อไม่ระบุเลขห้อง
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Row: Status & Towel Count -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-4">
+                            📋 สถานะ
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Check In -->
+                            <label class="relative cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="status" 
+                                    value="Check In"
+                                    class="sr-only peer"
+                                    required
+                                >
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300">
+                                    <div class="text-2xl mb-2">🏨</div>
+                                    <div class="font-semibold text-gray-700 peer-checked:text-green-700">Check In</div>
+                                    <div class="text-xs text-gray-500 mt-1">เข้าพัก</div>
+                                    <!-- Check mark -->
+                                    <div class="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- Check Out -->
+                            <label class="relative cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="status" 
+                                    value="Check Out"
+                                    class="sr-only peer"
+                                    required
+                                >
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300">
+                                    <div class="text-2xl mb-2">🚪</div>
+                                    <div class="font-semibold text-gray-700 peer-checked:text-blue-700">Check Out</div>
+                                    <div class="text-xs text-gray-500 mt-1">ออกจากห้อง</div>
+                                    <!-- Check mark -->
+                                    <div class="absolute top-2 right-2 w-5 h-5 bg-blue-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Towel Count -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-4">
+                            🏊 จำนวนผ้าเช็ดตัว
+                        </label>
+                        <div class="flex items-center justify-center space-x-4">
+                            <!-- Decrease Button -->
+                            <button 
+                                type="button" 
+                                id="decreaseBtn"
+                                class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Count Display -->
+                            <div class="flex-1 max-w-xs">
+                                <input 
+                                    type="number" 
+                                    id="towelCount" 
+                                    name="towelCount"
+                                    min="1"
+                                    max="20"
+                                    value="1"
+                                    class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-2xl font-bold text-center bg-gray-50"
+                                    readonly
+                                    required
+                                >
+                            </div>
+
+                            <!-- Increase Button -->
+                            <button 
+                                type="button" 
+                                id="increaseBtn"
+                                class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="text-center mt-2 text-sm text-gray-500">
+                            คลิกปุ่ม + หรือ - เพื่อปรับจำนวน
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Notes & Submit -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+                    <!-- Notes -->
+                    <div class="lg:col-span-2">
+                        <label for="notes" class="block text-sm font-semibold text-gray-700 mb-2">
+                            📝 หมายเหตุ (ไม่บังคับ)
+                        </label>
+                        <textarea 
+                            id="notes" 
+                            name="notes"
+                            rows="3"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors resize-none"
+                            placeholder="หมายเหตุเพิ่มเติม..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button 
+                            type="submit" 
+                            id="submitBtn"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl h-[84px] flex items-center justify-center"
+                        >
+                            <span id="submitText">💾 บันทึกข้อมูล</span>
+                            <span id="loadingText" class="loading">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                กำลังบันทึก...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Success/Error Messages -->
+            <div id="message" class="mt-6 p-4 rounded-lg hidden">
+                <p id="messageText" class="font-medium"></p>
+            </div>
+        </div>
+
+        <!-- Recent Records -->
+        <div class="max-w-4xl mx-auto mt-12">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">📊 บันทึกล่าสุด</h2>
+                    <button 
+                        id="refreshBtn"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        🔄 รีเฟรช
+                    </button>
+                </div>
+                <div id="recordsContainer" class="overflow-x-auto">
+                    <div class="text-center py-8 text-gray-500">
+                        กำลังโหลดข้อมูล...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSgc7SBt_GyKtUkziObMUZGDvY5BtTLO4JK-udSGSG-Hv5Nw_JcBl4TKLc6yY7F8TWjw/exec';
+        
+        let todayRecords = []; // Store today's records for duplicate checking
+
+        // Check if room number already exists today and return details
+        function checkRoomDuplicate(roomNumber) {
+            if (!roomNumber) return null;
+            
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            const duplicateRecord = todayRecords.find(record => {
+                if (!record[0] || !record[1]) return false;
+                
+                // Parse the date from the record
+                const recordDateStr = record[0].toString();
+                let recordDate;
+                
+                // Try different date formats
+                if (recordDateStr.includes('/')) {
+                    // Format: DD/MM/YYYY or MM/DD/YYYY
+                    const parts = recordDateStr.split(' ')[0].split('/');
+                    if (parts.length === 3) {
+                        // Assume DD/MM/YYYY format (Thai format)
+                        recordDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                } else if (recordDateStr.includes('-')) {
+                    // Format: YYYY-MM-DD
+                    recordDate = new Date(recordDateStr.split(' ')[0]);
+                } else {
+                    // Try to parse as is
+                    recordDate = new Date(recordDateStr);
+                }
+                
+                if (isNaN(recordDate.getTime())) return false;
+                
+                const recordDateFormatted = recordDate.getFullYear() + '-' + 
+                                          String(recordDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                          String(recordDate.getDate()).padStart(2, '0');
+                
+                return recordDateFormatted === todayStr && record[1].toString().trim() === roomNumber.trim();
+            });
+            
+            return duplicateRecord || null;
+        }
+
+        // Format time difference
+        function getTimeDifference(recordTimeStr) {
+            try {
+                const recordTime = new Date(recordTimeStr);
+                const now = new Date();
+                const diffMs = now - recordTime;
+                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMinutes / 60);
+                
+                if (diffMinutes < 60) {
+                    return `${diffMinutes} นาทีที่แล้ว`;
+                } else if (diffHours < 24) {
+                    const remainingMinutes = diffMinutes % 60;
+                    if (remainingMinutes === 0) {
+                        return `${diffHours} ชั่วโมงที่แล้ว`;
+                    } else {
+                        return `${diffHours} ชั่วโมง ${remainingMinutes} นาทีที่แล้ว`;
+                    }
+                } else {
+                    return 'วันนี้';
+                }
+            } catch (error) {
+                return 'วันนี้';
+            }
+        }
+
+        // Form submission
+        document.getElementById('towelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Validate form data
+            const formData = new FormData(this);
+            const roomNumber = formData.get('roomNumber').trim();
+            const customerName = formData.get('customerName').trim();
+            
+            // Check if either room number or customer name is provided
+            if (!roomNumber && !customerName) {
+                showMessage('❌ กรุณากรอกเลขห้องหรือชื่อลูกค้า', 'error');
+                return;
+            }
+            
+            // If room number is provided, check for duplicates
+            const duplicateRecord = checkRoomDuplicate(roomNumber);
+            if (roomNumber && duplicateRecord) {
+                const timeDiff = getTimeDifference(duplicateRecord[0]);
+                showMessage(`❌ เลขห้องนี้มีการบันทึกแล้วในวันนี้ (${timeDiff})`, 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            loadingText.classList.add('show');
+            
+            try {
+                const data = {
+                    action: 'addRecord',
+                    roomNumber: roomNumber,
+                    customerName: customerName,
+                    status: formData.get('status'),
+                    towelCount: parseInt(formData.get('towelCount')),
+                    notes: formData.get('notes') || ''
+                };
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'success');
+                    this.reset();
+                    loadRecords(); // Refresh records
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาด');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    showMessage('❌ ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบ:\n1. Google Apps Script ได้ Deploy แล้วหรือยัง\n2. URL ถูกต้องหรือไม่\n3. สิทธิ์การเข้าถึงเหมาะสมหรือไม่', 'error');
+                } else {
+                    showMessage('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+                }
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline';
+                loadingText.classList.remove('show');
+            }
+        });
+
+        // Load recent records
+        async function loadRecords() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getRecords', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    todayRecords = result.data; // Store for duplicate checking
+                    displayRecords(result.data);
+                } else {
+                    throw new Error('ไม่สามารถโหลดข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Error loading records:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    document.getElementById('recordsContainer').innerHTML = 
+                        '<div class="text-center py-8 text-red-500">❌ ไม่สามารถเชื่อมต่อได้<br><small class="text-gray-500">กรุณาตรวจสอบการตั้งค่า Google Apps Script</small></div>';
+                } else {
+                    document.getElementById('recordsContainer').innerHTML = 
+                        '<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้</div>';
+                }
+            }
+        }
+
+        // Display records in table
+        function displayRecords(records) {
+            const container = document.getElementById('recordsContainer');
+            
+            if (!records || records.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีข้อมูล</div>';
+                return;
+            }
+
+            const table = `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 border-b">
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">วันที่เวลา</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">เลขห้อง</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">ชื่อลูกค้า</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">จำนวนผ้าเช็ดตัว</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${records.map(record => `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">${record[0] || ''}</td>
+                                <td class="px-4 py-3 font-medium">${record[1] || ''}</td>
+                                <td class="px-4 py-3">${record[2] || ''}</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                                        record[3] === 'Check In' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                                    }">
+                                        ${record[3] || ''}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center font-medium">${record[4] || ''}</td>
+                                <td class="px-4 py-3">${record[5] || ''}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = table;
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            const messageText = document.getElementById('messageText');
+            
+            messageText.textContent = text;
+            message.className = `mt-6 p-4 rounded-lg ${
+                type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`;
+            message.classList.remove('hidden');
+            
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Towel count controls
+        const towelCountInput = document.getElementById('towelCount');
+        const increaseBtn = document.getElementById('increaseBtn');
+        const decreaseBtn = document.getElementById('decreaseBtn');
+
+        increaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(towelCountInput.value) || 1;
+            if (currentValue < 20) {
+                towelCountInput.value = currentValue + 1;
+            }
+        });
+
+        decreaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(towelCountInput.value) || 1;
+            if (currentValue > 1) {
+                towelCountInput.value = currentValue - 1;
+            }
+        });
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', loadRecords);
+
+        // Real-time validation
+        document.getElementById('roomNumber').addEventListener('input', function() {
+            const roomNumber = this.value.trim();
+            const roomWarning = document.getElementById('roomWarning');
+            const customerNameField = document.getElementById('customerName');
+            const customerNameRequired = document.getElementById('customerNameRequired');
+            
+            if (roomNumber) {
+                // Check for duplicate
+                const duplicateRecord = checkRoomDuplicate(roomNumber);
+                if (duplicateRecord) {
+                    const timeDiff = getTimeDifference(duplicateRecord[0]);
+                    roomWarning.textContent = `⚠️ เลขห้องนี้มีการบันทึกแล้วในวันนี้ (${timeDiff})`;
+                    roomWarning.classList.remove('hidden');
+                    this.classList.add('border-red-500');
+                } else {
+                    roomWarning.classList.add('hidden');
+                    this.classList.remove('border-red-500');
+                }
+                
+                // Hide customer name requirement when room number is provided
+                customerNameRequired.classList.add('hidden');
+                customerNameField.classList.remove('border-orange-500');
+            } else {
+                roomWarning.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        document.getElementById('customerName').addEventListener('input', function() {
+            const customerName = this.value.trim();
+            const roomNumber = document.getElementById('roomNumber').value.trim();
+            const customerNameRequired = document.getElementById('customerNameRequired');
+            
+            if (!roomNumber && !customerName) {
+                customerNameRequired.classList.remove('hidden');
+                this.classList.add('border-orange-500');
+            } else {
+                customerNameRequired.classList.add('hidden');
+                this.classList.remove('border-orange-500');
+            }
+        });
+
+        // Load records on page load
+        window.addEventListener('load', loadRecords);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98d4c186d76a4b71',t:'MTc2MDI1MjgwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
