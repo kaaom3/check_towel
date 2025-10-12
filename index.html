@@ -363,15 +363,15 @@
             const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             
             const duplicateRecord = allRecords.find(record => {
-                if (!record[0] || !record[1] || !record[2]) return false;
+                if (!record[0] || !record[2]) return false; // Check only for timestamp and room number existence
                 
                 try {
                     const [day, month, year] = record[0].split(' ')[0].split('/');
                     const recordDate = new Date(`${year}-${month}-${day}`);
                     const recordDateStr = recordDate.toLocaleDateString('en-CA');
+                    // Check for same date and same room number, regardless of location
                     return recordDateStr === todayStr && 
-                           record[2].toString().trim() === roomNumber.trim() &&
-                           record[1].toString().trim() === selectedLocation;
+                           record[2].toString().trim() === roomNumber.trim();
                 } catch(e) {
                     return false;
                 }
@@ -415,7 +415,13 @@
             const duplicateRecord = checkRoomDuplicate(roomNumber);
             if (roomNumber && duplicateRecord) {
                 const timeDiff = getTimeDifference(duplicateRecord[0]);
-                showMessage(`❌ เลขนี้มีการบันทึกแล้วในวันนี้ (${timeDiff})`, 'error');
+                const dupLocation = duplicateRecord[1];
+                const dupTowelCount = duplicateRecord[5];
+                const dupTime = duplicateRecord[0].split(' ')[1];
+                
+                const message = `❌ เลขนี้มีการบันทึกซ้ำวันนี้!\n- สถานที่: ${dupLocation}\n- จำนวน: ${dupTowelCount} ผืน\n- เวลา: ${dupTime} (${timeDiff})`;
+                
+                showMessage(message, 'error', 10000); // Show for 10 seconds
                 return;
             }
             
@@ -542,66 +548,77 @@
             const container = document.getElementById('dailySummaryContainer');
             const todayStr = getFormattedDate(new Date());
 
-            const todaysData = records.filter(record => {
-                return record[0] && record[0].startsWith(todayStr);
-            });
+            const todaysData = records.filter(record => record[0] && record[0].startsWith(todayStr));
 
             if (todaysData.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center text-gray-600">
-                        <p>ยังไม่มีรายการสำหรับวันนี้</p>
-                    </div>`;
+                container.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center text-gray-600"><p>ยังไม่มีรายการสำหรับวันนี้</p></div>`;
                 return;
             }
+            
+            const createSummaryObject = () => ({
+                totalRecords: 0, checkInCount: 0, checkOutCount: 0,
+                checkInTowels: 0, checkOutTowels: 0, totalTowels: 0
+            });
 
             const summary = {
-                totalRecords: todaysData.length,
-                checkInCount: 0,
-                checkOutCount: 0,
-                checkInTowels: 0,
-                checkOutTowels: 0,
-                totalTowels: 0
+                TOTAL: createSummaryObject(),
+                HIHH: createSummaryObject(),
+                LOCKER: createSummaryObject()
             };
 
             todaysData.forEach(row => {
+                const location = row[1]; // HIHH or LOCKER
                 const status = row[4];
                 const towelCount = parseInt(row[5], 10) || 0;
-                if (status === 'Check In') {
-                    summary.checkInCount++;
-                    summary.checkInTowels += towelCount;
-                } else if (status === 'Check Out') {
-                    summary.checkOutCount++;
-                    summary.checkOutTowels += towelCount;
+
+                const updateCounts = (obj) => {
+                    obj.totalRecords++;
+                    obj.totalTowels += towelCount;
+                    if (status === 'Check In') {
+                        obj.checkInCount++;
+                        obj.checkInTowels += towelCount;
+                    } else if (status === 'Check Out') {
+                        obj.checkOutCount++;
+                        obj.checkOutTowels += towelCount;
+                    }
+                };
+                
+                updateCounts(summary.TOTAL);
+                if (summary[location]) {
+                    updateCounts(summary[location]);
                 }
             });
-            summary.totalTowels = summary.checkInTowels + summary.checkOutTowels;
+            
+            const renderSummaryCard = (title, data, color) => {
+                if (data.totalRecords === 0) return '';
+                return `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 ${color}">
+                        <h5 class="font-bold text-gray-800 text-lg">${title}</h5>
+                        <div class="text-sm text-gray-500 mt-2">รวม ${data.totalRecords} รายการ / ${data.totalTowels} ผืน</div>
+                        <div class="flex justify-around mt-3 text-center">
+                            <div>
+                                <div class="font-semibold text-green-700">Check In</div>
+                                <div class="text-md font-bold">${data.checkInTowels} <span class="text-xs">ผืน</span></div>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-blue-700">Check Out</div>
+                                <div class="text-md font-bold">${data.checkOutTowels} <span class="text-xs">ผืน</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
 
             container.innerHTML = `
                 <div class="bg-gray-50 p-4 rounded-xl border">
-                    <h4 class="font-bold text-lg mb-3 text-gray-800">สรุปยอดวันนี้ (${todayStr})</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div class="bg-white p-3 rounded-lg shadow-sm">
-                            <div class="text-sm text-gray-500">รวมทุกรายการ</div>
-                            <div class="text-2xl font-bold text-indigo-600">${summary.totalRecords}</div>
-                        </div>
-                        <div class="bg-white p-3 rounded-lg shadow-sm">
-                            <div class="text-sm text-gray-500">ผ้าเช็ดตัวทั้งหมด</div>
-                            <div class="text-2xl font-bold text-indigo-600">${summary.totalTowels}</div>
-                        </div>
-                        <div class="bg-green-50 p-3 rounded-lg border border-green-200">
-                            <div class="font-semibold text-sm text-green-800">Check In</div>
-                            <div class="text-xl font-bold text-green-700">${summary.checkInTowels} ผืน</div>
-                            <div class="text-xs text-gray-500">${summary.checkInCount} รายการ</div>
-                        </div>
-                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                            <div class="font-semibold text-sm text-blue-800">Check Out</div>
-                            <div class="text-xl font-bold text-blue-700">${summary.checkOutTowels} ผืน</div>
-                            <div class="text-xs text-gray-500">${summary.checkOutCount} รายการ</div>
-                        </div>
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">สรุปยอดวันนี้ (${todayStr})</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${renderSummaryCard('รวมทั้งหมด', summary.TOTAL, 'border-indigo-500')}
+                        ${renderSummaryCard('HIHH', summary.HIHH, 'border-blue-500')}
+                        ${renderSummaryCard('LOCKER', summary.LOCKER, 'border-green-500')}
                     </div>
                 </div>`;
         }
-
 
         function displayRecords(records) {
             const container = document.getElementById('recordsContainer');
@@ -697,13 +714,17 @@
             });
         }
 
-        function showMessage(text, type) {
+        function showMessage(text, type, duration = 5000) {
             const message = document.getElementById('message');
             const messageText = document.getElementById('messageText');
             messageText.textContent = text;
+            messageText.style.whiteSpace = 'pre-wrap';
             message.className = `mx-6 mb-6 p-4 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
             message.classList.remove('hidden');
-            setTimeout(() => message.classList.add('hidden'), 5000);
+            setTimeout(() => {
+                message.classList.add('hidden');
+                messageText.style.whiteSpace = 'normal';
+            }, duration);
         }
 
         // --- Towel count controls ---
