@@ -272,6 +272,10 @@
                                 กำลังโหลดข้อมูล...
                             </div>
                         </div>
+                         <!-- Pagination Controls -->
+                        <div id="paginationContainer" class="flex justify-center items-center mt-6">
+                            <!-- Pagination controls will be injected here -->
+                        </div>
                     </div>
 
                     <!-- Summary Panel -->
@@ -318,8 +322,10 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSgc7SBt_GyKtUkziObMUZGDvY5BtTLO4JK-udSGSG-Hv5Nw_JcBl4TKLc6yY7F8TWjw/exec';
         
-        let todayRecords = [];
-        let lastKnownFirstRecordTimestamp = null; // Variable to track the latest record for real-time updates
+        let allRecords = [];
+        let lastKnownFirstRecordTimestamp = null;
+        let currentPage = 1;
+        const recordsPerPage = 5;
 
         function getFormattedDate(date) {
             const d = String(date.getDate()).padStart(2, '0');
@@ -332,7 +338,7 @@
             if (!roomNumber) return null;
             const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             
-            const duplicateRecord = todayRecords.find(record => {
+            const duplicateRecord = allRecords.find(record => {
                 if (!record[0] || !record[1]) return false;
                 
                 try {
@@ -430,13 +436,17 @@
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    const newFirstRecordTimestamp = result.data.length > 0 ? result.data[0][0] : null;
+                    const fetchedRecords = result.data;
+                    const newFirstRecordTimestamp = fetchedRecords.length > 0 ? fetchedRecords[0][0] : null;
+
                     if (newFirstRecordTimestamp !== lastKnownFirstRecordTimestamp) {
                         console.log('New data detected. Refreshing list.');
                         lastKnownFirstRecordTimestamp = newFirstRecordTimestamp;
-                        todayRecords = result.data;
-                        displayDailySummary(result.data); // Display today's summary
-                        displayRecords(result.data);
+                        allRecords = fetchedRecords;
+                        currentPage = 1;
+
+                        displayDailySummary(allRecords);
+                        updateRecordView();
                     }
                 } else {
                     throw new Error('ไม่สามารถโหลดข้อมูลได้');
@@ -447,6 +457,54 @@
                     container.innerHTML = `<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
                 }
             }
+        }
+        
+        function updateRecordView() {
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedRecords = allRecords.slice(startIndex, endIndex);
+
+            displayRecords(paginatedRecords);
+            setupPagination();
+        }
+
+        function setupPagination() {
+            const container = document.getElementById('paginationContainer');
+            const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const prevDisabled = currentPage === 1 ? 'disabled' : '';
+            const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+
+            container.innerHTML = `
+                <button id="prevPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-l disabled:opacity-50 disabled:cursor-not-allowed" ${prevDisabled}>
+                    &laquo; ก่อนหน้า
+                </button>
+                <span class="px-4 py-2 bg-white text-gray-700 border-t border-b border-indigo-500">
+                    หน้า ${currentPage} จาก ${totalPages}
+                </span>
+                <button id="nextPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-r disabled:opacity-50 disabled:cursor-not-allowed" ${nextDisabled}>
+                    ถัดไป &raquo;
+                </button>
+            `;
+
+            document.getElementById('prevPageBtn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateRecordView();
+                }
+            });
+
+            document.getElementById('nextPageBtn').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateRecordView();
+                }
+            });
         }
 
         function displayDailySummary(records) {
@@ -546,7 +604,7 @@
                 if (dateKey === yesterdayStr) dateLabel = `เมื่อวาน (${dateKey})`;
 
                 const recordsForDate = groupedRecords[dateKey];
-                const isExpanded = isFirstGroup;
+                const isExpanded = true;
                 
                 html += `
                 <div class="border rounded-lg overflow-hidden bg-white">
