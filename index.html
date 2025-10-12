@@ -294,6 +294,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSgc7SBt_GyKtUkziObMUZGDvY5BtTLO4JK-udSGSG-Hv5Nw_JcBl4TKLc6yY7F8TWjw/exec';
         
         let todayRecords = [];
+        let lastKnownFirstRecordTimestamp = null; // Variable to track the latest record for real-time updates
 
         function checkRoomDuplicate(roomNumber) {
             if (!roomNumber) return null;
@@ -395,15 +396,27 @@
                 const response = await fetch(SCRIPT_URL + '?action=getRecords', { method: 'GET', mode: 'cors' });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const result = await response.json();
+                
                 if (result.success && result.data) {
-                    todayRecords = result.data;
-                    displayRecords(result.data);
+                    // Check if the latest record has changed before redrawing the whole table.
+                    // This makes the real-time update more efficient and less jarring for the user.
+                    const newFirstRecordTimestamp = result.data.length > 0 ? result.data[0][0] : null;
+                    if (newFirstRecordTimestamp !== lastKnownFirstRecordTimestamp) {
+                        console.log('New data detected. Refreshing list.');
+                        lastKnownFirstRecordTimestamp = newFirstRecordTimestamp;
+                        todayRecords = result.data;
+                        displayRecords(result.data);
+                    }
                 } else {
                     throw new Error('ไม่สามารถโหลดข้อมูลได้');
                 }
             } catch (error) {
-                console.error('Error loading records:', error);
-                container.innerHTML = `<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
+                console.error('Error during background refresh:', error);
+                // To avoid showing an error on a silent background refresh, 
+                // we only show the error if the table hasn't been loaded at all.
+                if (!container.querySelector('table')) {
+                    container.innerHTML = `<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
+                }
             }
         }
 
@@ -587,6 +600,10 @@
         }
 
         window.addEventListener('load', loadRecords);
+
+        // For real-time data, automatically refresh records every 10 seconds.
+        setInterval(loadRecords, 10000); // Poll every 10 seconds
+
     </script>
 </body>
 </html>
