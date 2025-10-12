@@ -37,281 +37,304 @@
             <h1 class="text-4xl font-bold text-indigo-800 mb-2">🏨 ระบบเบิกผ้าเช็ดตัว</h1>
         </div>
 
-        <!-- Main Form -->
-        <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl">
-            <div class="flex justify-between items-center p-6">
-                <h2 class="text-2xl font-bold text-gray-800">📝 กรอกข้อมูล</h2>
-            </div>
-
-            <div class="px-6 pb-8">
-                <form id="towelForm" class="space-y-8">
-                    <!-- Top Row: Room Number & Customer Name -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Room Number -->
-                        <div>
-                            <label for="roomNumber" class="block text-sm font-semibold text-gray-700 mb-2">
-                                🏠 เลขห้อง
-                            </label>
-                            <input 
-                                type="text" 
-                                id="roomNumber" 
-                                name="roomNumber"
-                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
-                                placeholder="กรอกเลขห้อง เช่น 101, 205 (หรือเว้นว่างถ้าไม่รู้)"
-                            >
-                            <div id="roomWarning" class="mt-2 text-sm text-red-600 hidden">
-                                ⚠️ เลขห้องนี้มีการบันทึกแล้วในวันนี้
-                            </div>
-                        </div>
-
-                        <!-- Customer Name -->
-                        <div>
-                            <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
-                                👤 ชื่อลูกค้า <span class="text-gray-500 text-xs">(กรอกเมื่อไม่รู้เลขห้อง)</span>
-                            </label>
-                            <input 
-                                type="text" 
-                                id="customerName" 
-                                name="customerName"
-                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
-                                placeholder="กรอกชื่อลูกค้า (ไม่บังคับ)"
-                            >
-                            <div id="customerNameRequired" class="mt-2 text-sm text-orange-600 hidden">
-                                💡 กรุณากรอกชื่อลูกค้าเมื่อไม่ระบุเลขห้อง
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Middle Row: Status & Towel Count -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Status -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-4">
-                                📋 สถานะ
-                            </label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <!-- Check In -->
-                                <label class="relative cursor-pointer">
-                                    <input 
-                                        type="radio" 
-                                        name="status" 
-                                        value="Check In"
-                                        class="sr-only peer"
-                                        required
-                                    >
-                                    <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300">
-                                        <div class="text-2xl mb-2">🏨</div>
-                                        <div class="font-semibold text-gray-700 peer-checked:text-green-700">Check In</div>
-                                        <div class="text-xs text-gray-500 mt-1">เข้าพัก</div>
-                                        <!-- Check mark -->
-                                        <div class="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full hidden peer-checked:flex items-center justify-center">
-                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </label>
-
-                                <!-- Check Out -->
-                                <label class="relative cursor-pointer">
-                                    <input 
-                                        type="radio" 
-                                        name="status" 
-                                        value="Check Out"
-                                        class="sr-only peer"
-                                        required
-                                    >
-                                    <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300">
-                                        <div class="text-2xl mb-2">🚪</div>
-                                        <div class="font-semibold text-gray-700 peer-checked:text-blue-700">Check Out</div>
-                                        <div class="text-xs text-gray-500 mt-1">ออกจากห้อง</div>
-                                        <!-- Check mark -->
-                                        <div class="absolute top-2 right-2 w-5 h-5 bg-blue-500 rounded-full hidden peer-checked:flex items-center justify-center">
-                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Towel Count -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-4">
-                                🏊 จำนวนผ้าเช็ดตัว
-                            </label>
-                            <div class="flex items-center justify-center space-x-4">
-                                <!-- Decrease Button -->
-                                <button 
-                                    type="button" 
-                                    id="decreaseBtn"
-                                    class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
-                                >
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                    </svg>
-                                </button>
-
-                                <!-- Count Display -->
-                                <div class="flex-1 max-w-xs">
-                                    <input 
-                                        type="number" 
-                                        id="towelCount" 
-                                        name="towelCount"
-                                        min="1"
-                                        max="20"
-                                        value="1"
-                                        class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-2xl font-bold text-center bg-gray-50"
-                                        readonly
-                                        required
-                                    >
-                                </div>
-
-                                <!-- Increase Button -->
-                                <button 
-                                    type="button" 
-                                    id="increaseBtn"
-                                    class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
-                                >
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="text-center mt-2 text-sm text-gray-500">
-                                คลิกปุ่ม + หรือ - เพื่อปรับจำนวน
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Row: Notes & Submit -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-                        <!-- Notes -->
-                        <div class="lg:col-span-2">
-                            <label for="notes" class="block text-sm font-semibold text-gray-700 mb-2">
-                                📝 หมายเหตุ (ไม่บังคับ)
-                            </label>
-                            <textarea 
-                                id="notes" 
-                                name="notes"
-                                rows="3"
-                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors resize-none"
-                                placeholder="หมายเหตุเพิ่มเติม..."
-                            ></textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div>
-                            <button 
-                                type="submit" 
-                                id="submitBtn"
-                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl h-[84px] flex items-center justify-center"
-                            >
-                                <span id="submitText">💾 บันทึกข้อมูล</span>
-                                <span id="loadingText" class="loading">
-                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    กำลังบันทึก...
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Success/Error Messages -->
-            <div id="message" class="mx-6 mb-6 p-4 rounded-lg hidden">
-                <p id="messageText" class="font-medium"></p>
+        <!-- Location Selection -->
+        <div id="locationSelection" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">กรุณาเลือกสถานที่</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button data-location="HIHH" class="location-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 px-4 rounded-lg transition-colors text-xl shadow-lg">
+                    📍 HIHH
+                </button>
+                <button data-location="LOCKER" class="location-btn bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-4 rounded-lg transition-colors text-xl shadow-lg">
+                     locker
+                </button>
             </div>
         </div>
-
-        <!-- Data/Tabs Section -->
-        <div class="max-w-4xl mx-auto mt-12 bg-white rounded-2xl shadow-xl">
-            <!-- Collapsible Data Header -->
-            <div id="dataHeader" class="flex justify-between items-center p-6 cursor-pointer">
-                <h2 class="text-2xl font-bold text-gray-800">📊 ดูข้อมูลและรายงาน</h2>
-                <svg id="dataChevron" class="w-6 h-6 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </div>
-            
-            <!-- Collapsible Data Content -->
-            <div id="dataContent" class="p-8 hidden">
-                <!-- Tab Headers -->
-                <nav class="flex border-b mb-6">
-                    <button data-tab="records" class="tab-btn tab-active font-semibold py-3 px-6 border-b-2 transition-colors">
-                        📊 บันทึกล่าสุด
-                    </button>
-                    <button data-tab="summary" class="tab-btn font-semibold py-3 px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-colors">
-                        📊 รายงานสรุป
-                    </button>
-                </nav>
-
-                <!-- Tab Panels -->
-                <div>
-                    <!-- Records Panel -->
-                    <div id="panel-records" class="p-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800">รายการล่าสุด</h2>
-                            <button 
-                                id="refreshBtn"
-                                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                🔄 รีเฟรช
-                            </button>
-                        </div>
-                        <!-- Daily Summary Container -->
-                        <div id="dailySummaryContainer" class="mb-6">
-                            <!-- Summary content will be injected here by JS -->
-                        </div>
-                        <div id="recordsContainer" class="space-y-4">
-                            <div class="text-center py-8 text-gray-500">
-                                กำลังโหลดข้อมูล...
-                            </div>
-                        </div>
-                         <!-- Pagination Controls -->
-                        <div id="paginationContainer" class="flex justify-center items-center mt-6">
-                            <!-- Pagination controls will be injected here -->
-                        </div>
+        
+        <!-- Main Content (Initially Hidden) -->
+        <div id="mainContent" class="hidden">
+            <!-- Main Form -->
+            <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">📝 กรอกข้อมูล</h2>
+                        <p class="text-gray-600">สำหรับสถานที่: <span id="selectedLocationText" class="font-semibold text-indigo-600"></span></p>
                     </div>
+                    <button id="changeLocationBtn" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg">
+                        เปลี่ยนสถานที่
+                    </button>
+                </div>
 
-                    <!-- Summary Panel -->
-                    <div id="panel-summary" class="hidden p-4">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6">📊 รายงานสรุป</h3>
-                        <!-- Report Options -->
-                        <div class="flex flex-col md:flex-row items-center gap-6 bg-gray-50 p-6 rounded-xl border">
-                            <!-- Radio buttons for type -->
-                            <div class="flex items-center gap-6">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="reportType" value="daily" class="form-radio h-5 w-5 text-indigo-600" checked>
-                                    <span class="text-gray-700 font-medium">รายวัน</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="reportType" value="monthly" class="form-radio h-5 w-5 text-indigo-600">
-                                    <span class="text-gray-700 font-medium">รายเดือน</span>
-                                </label>
-                            </div>
-
-                            <!-- Date/Month Pickers -->
-                            <div class="flex-grow">
-                                <input type="date" id="reportDate" class="w-full px-4 py-2 border rounded-lg">
-                                <input type="month" id="reportMonth" class="w-full px-4 py-2 border rounded-lg hidden">
-                            </div>
-
-                            <!-- Get Report Button -->
+                <div class="px-6 pb-8 pt-6">
+                    <form id="towelForm" class="space-y-8">
+                        <input type="hidden" id="location" name="location">
+                        <!-- Top Row: Room Number & Customer Name -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Room Number -->
                             <div>
-                                <button id="getSummaryBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full md:w-auto flex items-center justify-center min-w-[140px]">
-                                    🔍 ดูรายงาน
+                                <label for="roomNumber" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    🏠 เลขห้อง / Locker
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="roomNumber" 
+                                    name="roomNumber"
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
+                                    placeholder="กรอกเลขห้อง เช่น 101, 205"
+                                >
+                                <div id="roomWarning" class="mt-2 text-sm text-red-600 hidden">
+                                    ⚠️ เลขนี้มีการบันทึกแล้วในวันนี้
+                                </div>
+                            </div>
+
+                            <!-- Customer Name -->
+                            <div>
+                                <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    👤 ชื่อลูกค้า <span class="text-gray-500 text-xs">(ถ้ามี)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="customerName" 
+                                    name="customerName"
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
+                                    placeholder="กรอกชื่อลูกค้า (ไม่บังคับ)"
+                                >
+                                <div id="customerNameRequired" class="mt-2 text-sm text-orange-600 hidden">
+                                    💡 กรุณากรอกเลขห้อง/Locker
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Row: Status & Towel Count -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Status -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-4">
+                                    📋 สถานะ
+                                </label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <!-- Check In -->
+                                    <label class="relative cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="status" 
+                                            value="Check In"
+                                            class="sr-only peer"
+                                            required
+                                        >
+                                        <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300">
+                                            <div class="text-2xl mb-2">🏨</div>
+                                            <div class="font-semibold text-gray-700 peer-checked:text-green-700">Check In</div>
+                                            <div class="text-xs text-gray-500 mt-1">เข้าพัก</div>
+                                            <!-- Check mark -->
+                                            <div class="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Check Out -->
+                                    <label class="relative cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="status" 
+                                            value="Check Out"
+                                            class="sr-only peer"
+                                            required
+                                        >
+                                        <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300">
+                                            <div class="text-2xl mb-2">🚪</div>
+                                            <div class="font-semibold text-gray-700 peer-checked:text-blue-700">Check Out</div>
+                                            <div class="text-xs text-gray-500 mt-1">ออกจากห้อง</div>
+                                            <!-- Check mark -->
+                                            <div class="absolute top-2 right-2 w-5 h-5 bg-blue-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Towel Count -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-4">
+                                    🏊 จำนวนผ้าเช็ดตัว
+                                </label>
+                                <div class="flex items-center justify-center space-x-4">
+                                    <!-- Decrease Button -->
+                                    <button 
+                                        type="button" 
+                                        id="decreaseBtn"
+                                        class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
+                                    >
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Count Display -->
+                                    <div class="flex-1 max-w-xs">
+                                        <input 
+                                            type="number" 
+                                            id="towelCount" 
+                                            name="towelCount"
+                                            min="1"
+                                            max="20"
+                                            value="1"
+                                            class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-2xl font-bold text-center bg-gray-50"
+                                            readonly
+                                            required
+                                        >
+                                    </div>
+
+                                    <!-- Increase Button -->
+                                    <button 
+                                        type="button" 
+                                        id="increaseBtn"
+                                        class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
+                                    >
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="text-center mt-2 text-sm text-gray-500">
+                                    คลิกปุ่ม + หรือ - เพื่อปรับจำนวน
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row: Notes & Submit -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+                            <!-- Notes -->
+                            <div class="lg:col-span-2">
+                                <label for="notes" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    📝 หมายเหตุ (ไม่บังคับ)
+                                </label>
+                                <textarea 
+                                    id="notes" 
+                                    name="notes"
+                                    rows="3"
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors resize-none"
+                                    placeholder="หมายเหตุเพิ่มเติม..."
+                                ></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div>
+                                <button 
+                                    type="submit" 
+                                    id="submitBtn"
+                                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl h-[84px] flex items-center justify-center"
+                                >
+                                    <span id="submitText">💾 บันทึกข้อมูล</span>
+                                    <span id="loadingText" class="loading">
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        กำลังบันทึก...
+                                    </span>
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Summary Result Container -->
-                        <div id="summaryResultContainer" class="mt-6 min-h-[150px]">
-                            <div class="text-center py-8 text-gray-500">กรุณาเลือกวันที่หรือเดือน แล้วกด "ดูรายงาน" เพื่อแสดงข้อมูล</div>
+                    </form>
+                </div>
+                
+                <!-- Success/Error Messages -->
+                <div id="message" class="mx-6 mb-6 p-4 rounded-lg hidden">
+                    <p id="messageText" class="font-medium"></p>
+                </div>
+            </div>
+
+            <!-- Data/Tabs Section -->
+            <div class="max-w-4xl mx-auto mt-12 bg-white rounded-2xl shadow-xl">
+                <!-- Collapsible Data Header -->
+                <div id="dataHeader" class="flex justify-between items-center p-6 cursor-pointer">
+                    <h2 class="text-2xl font-bold text-gray-800">📊 ดูข้อมูลและรายงาน</h2>
+                    <svg id="dataChevron" class="w-6 h-6 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                
+                <!-- Collapsible Data Content -->
+                <div id="dataContent" class="p-8 hidden">
+                    <!-- Tab Headers -->
+                    <nav class="flex border-b mb-6">
+                        <button data-tab="records" class="tab-btn tab-active font-semibold py-3 px-6 border-b-2 transition-colors">
+                            📊 บันทึกล่าสุด
+                        </button>
+                        <button data-tab="summary" class="tab-btn font-semibold py-3 px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-colors">
+                            📊 รายงานสรุป
+                        </button>
+                    </nav>
+
+                    <!-- Tab Panels -->
+                    <div>
+                        <!-- Records Panel -->
+                        <div id="panel-records" class="p-4">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">รายการล่าสุด</h2>
+                                <button 
+                                    id="refreshBtn"
+                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                >
+                                    🔄 รีเฟรช
+                                </button>
+                            </div>
+                            <!-- Daily Summary Container -->
+                            <div id="dailySummaryContainer" class="mb-6">
+                                <!-- Summary content will be injected here by JS -->
+                            </div>
+                            <div id="recordsContainer" class="space-y-4">
+                                <div class="text-center py-8 text-gray-500">
+                                    กำลังโหลดข้อมูล...
+                                </div>
+                            </div>
+                             <!-- Pagination Controls -->
+                            <div id="paginationContainer" class="flex justify-center items-center mt-6">
+                                <!-- Pagination controls will be injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Summary Panel -->
+                        <div id="panel-summary" class="hidden p-4">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">📊 รายงานสรุป</h3>
+                            <!-- Report Options -->
+                            <div class="flex flex-col md:flex-row items-center gap-6 bg-gray-50 p-6 rounded-xl border">
+                                <!-- Radio buttons for type -->
+                                <div class="flex items-center gap-6">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="reportType" value="daily" class="form-radio h-5 w-5 text-indigo-600" checked>
+                                        <span class="text-gray-700 font-medium">รายวัน</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="reportType" value="monthly" class="form-radio h-5 w-5 text-indigo-600">
+                                        <span class="text-gray-700 font-medium">รายเดือน</span>
+                                    </label>
+                                </div>
+
+                                <!-- Date/Month Pickers -->
+                                <div class="flex-grow">
+                                    <input type="date" id="reportDate" class="w-full px-4 py-2 border rounded-lg">
+                                    <input type="month" id="reportMonth" class="w-full px-4 py-2 border rounded-lg hidden">
+                                </div>
+
+                                <!-- Get Report Button -->
+                                <div>
+                                    <button id="getSummaryBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full md:w-auto flex items-center justify-center min-w-[140px]">
+                                        🔍 ดูรายงาน
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Summary Result Container -->
+                            <div id="summaryResultContainer" class="mt-6 min-h-[150px]">
+                                <div class="text-center py-8 text-gray-500">กรุณาเลือกวันที่หรือเดือน แล้วกด "ดูรายงาน" เพื่อแสดงข้อมูล</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -326,6 +349,7 @@
         let lastKnownFirstRecordTimestamp = null;
         let currentPage = 1;
         const recordsPerPage = 5;
+        let selectedLocation = '';
 
         function getFormattedDate(date) {
             const d = String(date.getDate()).padStart(2, '0');
@@ -339,19 +363,22 @@
             const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             
             const duplicateRecord = allRecords.find(record => {
-                if (!record[0] || !record[1]) return false;
+                if (!record[0] || !record[1] || !record[2]) return false;
                 
                 try {
                     const [day, month, year] = record[0].split(' ')[0].split('/');
                     const recordDate = new Date(`${year}-${month}-${day}`);
                     const recordDateStr = recordDate.toLocaleDateString('en-CA');
-                    return recordDateStr === todayStr && record[1].toString().trim() === roomNumber.trim();
+                    return recordDateStr === todayStr && 
+                           record[2].toString().trim() === roomNumber.trim() &&
+                           record[1].toString().trim() === selectedLocation;
                 } catch(e) {
                     return false;
                 }
             });
             return duplicateRecord || null;
         }
+
 
         function getTimeDifference(recordTimeStr) {
              try {
@@ -380,15 +407,15 @@
             const roomNumber = formData.get('roomNumber').trim();
             const customerName = formData.get('customerName').trim();
             
-            if (!roomNumber && !customerName) {
-                showMessage('❌ กรุณากรอกเลขห้องหรือชื่อลูกค้า', 'error');
+            if (!roomNumber) {
+                showMessage('❌ กรุณากรอกเลขห้อง/Locker', 'error');
                 return;
             }
             
             const duplicateRecord = checkRoomDuplicate(roomNumber);
             if (roomNumber && duplicateRecord) {
                 const timeDiff = getTimeDifference(duplicateRecord[0]);
-                showMessage(`❌ เลขห้องนี้มีการบันทึกแล้วในวันนี้ (${timeDiff})`, 'error');
+                showMessage(`❌ เลขนี้มีการบันทึกแล้วในวันนี้ (${timeDiff})`, 'error');
                 return;
             }
             
@@ -399,7 +426,9 @@
             try {
                 const data = {
                     action: 'addRecord',
-                    roomNumber, customerName,
+                    location: formData.get('location'),
+                    roomNumber, 
+                    customerName,
                     status: formData.get('status'),
                     towelCount: parseInt(formData.get('towelCount')),
                     notes: formData.get('notes') || ''
@@ -413,7 +442,9 @@
                 const result = await response.json();
                 if (result.success) {
                     showMessage('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'success');
-                    this.reset();
+                    document.getElementById('roomNumber').value = '';
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('notes').value = '';
                     loadRecords();
                 } else {
                     throw new Error(result.error || 'เกิดข้อผิดพลาด');
@@ -533,8 +564,8 @@
             };
 
             todaysData.forEach(row => {
-                const status = row[3];
-                const towelCount = parseInt(row[4], 10) || 0;
+                const status = row[4];
+                const towelCount = parseInt(row[5], 10) || 0;
                 if (status === 'Check In') {
                     summary.checkInCount++;
                     summary.checkInTowels += towelCount;
@@ -575,7 +606,7 @@
         function displayRecords(records) {
             const container = document.getElementById('recordsContainer');
             if (!records || records.length === 0) {
-                container.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีข้อมูล</div>';
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีข้อมูลสำหรับหน้านี้</div>';
                 return;
             }
 
@@ -596,8 +627,7 @@
             const yesterdayStr = getFormattedDate(yesterday);
 
             let html = '';
-            let isFirstGroup = true;
-
+            
             for (const dateKey in groupedRecords) {
                 let dateLabel = dateKey;
                 if (dateKey === todayStr) dateLabel = `วันนี้ (${dateKey})`;
@@ -620,6 +650,7 @@
                                 <thead>
                                     <tr class="bg-gray-50 border-b">
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">เวลา</th>
+                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">สถานที่</th>
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">เลขห้อง</th>
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">ชื่อลูกค้า</th>
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
@@ -631,15 +662,16 @@
                                     ${recordsForDate.map(record => `
                                         <tr class="border-b hover:bg-gray-50">
                                             <td class="px-4 py-3">${record[0].split(' ')[1] || ''}</td>
-                                            <td class="px-4 py-3 font-medium">${record[1] || ''}</td>
-                                            <td class="px-4 py-3">${record[2] || ''}</td>
+                                            <td class="px-4 py-3">${record[1] || ''}</td>
+                                            <td class="px-4 py-3 font-medium">${record[2] || ''}</td>
+                                            <td class="px-4 py-3">${record[3] || ''}</td>
                                             <td class="px-4 py-3">
-                                                <span class="px-2 py-1 rounded-full text-xs font-medium ${record[3] === 'Check In' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
-                                                    ${record[3] || ''}
+                                                <span class="px-2 py-1 rounded-full text-xs font-medium ${record[4] === 'Check In' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+                                                    ${record[4] || ''}
                                                 </span>
                                             </td>
-                                            <td class="px-4 py-3 text-center font-medium">${record[4] || ''}</td>
-                                            <td class="px-4 py-3">${record[5] || ''}</td>
+                                            <td class="px-4 py-3 text-center font-medium">${record[5] || ''}</td>
+                                            <td class="px-4 py-3">${record[6] || ''}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -648,7 +680,6 @@
                     </div>
                 </div>
                 `;
-                isFirstGroup = false;
             }
 
             container.innerHTML = html;
@@ -797,10 +828,36 @@
                 </div>`;
         }
 
-        window.addEventListener('load', loadRecords);
+        // --- Location Selection Logic ---
+        document.querySelectorAll('.location-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                selectedLocation = this.dataset.location;
+                document.getElementById('location').value = selectedLocation;
+                document.getElementById('selectedLocationText').textContent = selectedLocation;
+                
+                document.getElementById('locationSelection').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                
+                loadRecords();
+            });
+        });
+
+        document.getElementById('changeLocationBtn').addEventListener('click', () => {
+            document.getElementById('locationSelection').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            allRecords = [];
+            lastKnownFirstRecordTimestamp = null;
+        });
+
+        // Initial Load
+        // window.addEventListener('load', loadRecords); // Remove this as loadRecords is called after location selection
 
         // For real-time data, automatically refresh records every 10 seconds.
-        setInterval(loadRecords, 10000); // Poll every 10 seconds
+        setInterval(() => {
+            if (selectedLocation) { // Only refresh if a location is selected
+                loadRecords();
+            }
+        }, 10000); // Poll every 10 seconds
 
     </script>
 </body>
