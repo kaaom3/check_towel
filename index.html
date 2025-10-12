@@ -39,16 +39,11 @@
 
         <!-- Main Form -->
         <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl">
-            <!-- Collapsible Form Header -->
-            <div id="formHeader" class="flex justify-between items-center p-6 cursor-pointer">
+            <div class="flex justify-between items-center p-6">
                 <h2 class="text-2xl font-bold text-gray-800">📝 กรอกข้อมูล</h2>
-                <svg id="formChevron" class="w-6 h-6 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
             </div>
 
-            <!-- Collapsible Form Content -->
-            <div id="formContent" class="px-6 pb-8">
+            <div class="px-6 pb-8">
                 <form id="towelForm" class="space-y-8">
                     <!-- Top Row: Room Number & Customer Name -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -233,9 +228,18 @@
             </div>
         </div>
 
-        <!-- Tabs Section -->
-        <div class="max-w-4xl mx-auto mt-12">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Data/Tabs Section -->
+        <div class="max-w-4xl mx-auto mt-12 bg-white rounded-2xl shadow-xl">
+            <!-- Collapsible Data Header -->
+            <div id="dataHeader" class="flex justify-between items-center p-6 cursor-pointer">
+                <h2 class="text-2xl font-bold text-gray-800">📊 ดูข้อมูลและรายงาน</h2>
+                <svg id="dataChevron" class="w-6 h-6 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+            
+            <!-- Collapsible Data Content -->
+            <div id="dataContent" class="p-8 hidden">
                 <!-- Tab Headers -->
                 <nav class="flex border-b mb-6">
                     <button data-tab="records" class="tab-btn tab-active font-semibold py-3 px-6 border-b-2 transition-colors">
