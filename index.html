@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเบิกผ้าเช็ดตัว</title>
+    <title>ระบบเบิกผ้าเช็ดตัว / Towel Request System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -28,318 +28,277 @@
         .transition-transform {
             transition: transform 0.2s ease-in-out;
         }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full text-sm md:text-base">
+    <div class="container mx-auto px-2 md:px-4 py-6">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-indigo-800 mb-2">🏨 ระบบเบิกผ้าเช็ดตัว</h1>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-indigo-800 mb-2">🏨 ระบบเบิกผ้าเช็ดตัว / Towel Request System</h1>
         </div>
 
         <!-- Location Selection -->
-        <div id="locationSelection" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">กรุณาเลือกสถานที่</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button data-location="HIHH" class="location-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 px-4 rounded-lg transition-colors text-xl shadow-lg">
+        <div id="locationSelection" class="max-w-xl mx-auto bg-white rounded-2xl shadow-xl p-6 text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">กรุณาเลือกสถานที่ / Please Select Location</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button data-location="HIHH" class="location-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg">
                     📍 HIHH
                 </button>
-                <button data-location="LOCKER" class="location-btn bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-4 rounded-lg transition-colors text-xl shadow-lg">
-                     locker
+                <button data-location="LOCKER" class="location-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg">
+                     Locker
                 </button>
             </div>
         </div>
         
         <!-- Main Content (Initially Hidden) -->
         <div id="mainContent" class="hidden">
-            <!-- Main Form -->
-            <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">📝 กรอกข้อมูล</h2>
-                        <p class="text-gray-600">สำหรับสถานที่: <span id="selectedLocationText" class="font-semibold text-indigo-600"></span></p>
-                    </div>
-                    <button id="changeLocationBtn" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg">
-                        เปลี่ยนสถานที่
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl">
+                 <!-- Tab Headers -->
+                <nav class="flex border-b">
+                    <button data-tab="form" class="tab-btn tab-active font-semibold py-2 px-4 text-sm transition-colors">
+                        📝 กรอกข้อมูล / Form
                     </button>
-                </div>
+                    <button data-tab="records" class="tab-btn font-semibold py-2 px-4 text-sm border-transparent text-gray-500 hover:text-gray-800 transition-colors">
+                        📊 บันทึกล่าสุด / Recent
+                    </button>
+                    <button data-tab="summary" class="tab-btn font-semibold py-2 px-4 text-sm border-transparent text-gray-500 hover:text-gray-800 transition-colors">
+                        📈 รายงานสรุป / Summary
+                    </button>
+                </nav>
 
-                <div class="px-6 pb-8 pt-6">
-                    <form id="towelForm" class="space-y-8">
-                        <input type="hidden" id="location" name="location">
-                        <!-- Top Row: Room Number & Customer Name -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Room Number -->
-                            <div class="relative">
-                                <label for="roomNumber" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    🏠 เลขห้อง / Locker
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="roomNumber" 
-                                    name="roomNumber"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
-                                    placeholder="กรอกเลขห้อง เช่น 101, 205"
-                                    autocomplete="off"
-                                >
-                                <div id="towelLimitInfoRoom" class="mt-2 text-sm text-gray-600 hidden"></div>
-                                <div id="roomSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg hidden max-h-40 overflow-y-auto"></div>
-                            </div>
-
-                            <!-- Customer Name -->
-                            <div class="relative">
-                                <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    👤 ชื่อลูกค้า <span class="text-gray-500 text-xs">(ถ้ามี)</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="customerName" 
-                                    name="customerName"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-lg"
-                                    placeholder="กรอกชื่อลูกค้า (ไม่บังคับ)"
-                                     autocomplete="off"
-                                >
-                                <div id="towelLimitInfoName" class="mt-2 text-sm text-gray-600 hidden"></div>
-                                <div id="nameSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg hidden max-h-40 overflow-y-auto"></div>
-                            </div>
+                <!-- Form Panel -->
+                <div id="panel-form">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800">กรอกข้อมูล / Fill Information</h2>
+                            <p class="text-gray-600 text-sm">สำหรับสถานที่ / For Location: <span id="selectedLocationText" class="font-semibold text-indigo-600"></span></p>
                         </div>
-
-                        <!-- Middle Row: Status & Towel Count -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <!-- Status -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-4">
-                                    📋 สถานะ
-                                </label>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <!-- Check In -->
-                                    <label class="relative cursor-pointer">
-                                        <input 
-                                            type="radio" 
-                                            name="status" 
-                                            value="Check In"
-                                            class="sr-only peer"
-                                            required
-                                        >
-                                        <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300">
-                                            <div class="text-2xl mb-2">🏨</div>
-                                            <div class="font-semibold text-gray-700 peer-checked:text-green-700">Check In</div>
-                                            <div class="text-xs text-gray-500 mt-1">เข้าพัก</div>
-                                            <!-- Check mark -->
-                                            <div class="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full hidden peer-checked:flex items-center justify-center">
-                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </label>
-
-                                    <!-- Check Out -->
-                                    <label class="relative cursor-pointer">
-                                        <input 
-                                            type="radio" 
-                                            name="status" 
-                                            value="Check Out"
-                                            class="sr-only peer"
-                                            required
-                                        >
-                                        <div class="bg-white border-2 border-gray-200 rounded-xl p-4 text-center transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300">
-                                            <div class="text-2xl mb-2">🚪</div>
-                                            <div class="font-semibold text-gray-700 peer-checked:text-blue-700">Check Out</div>
-                                            <div class="text-xs text-gray-500 mt-1">ออกจากห้อง</div>
-                                            <!-- Check mark -->
-                                            <div class="absolute top-2 right-2 w-5 h-5 bg-blue-500 rounded-full hidden peer-checked:flex items-center justify-center">
-                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Towel Count -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-4">
-                                    🏊 จำนวนผ้าเช็ดตัว
-                                </label>
-                                <div class="flex items-center justify-center space-x-4">
-                                    <!-- Decrease Button -->
-                                    <button 
-                                        type="button" 
-                                        id="decreaseBtn"
-                                        class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
-                                    >
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                        </svg>
-                                    </button>
-
-                                    <!-- Count Display -->
-                                    <div class="flex-1 max-w-xs">
-                                        <input 
-                                            type="number" 
-                                            id="towelCount" 
-                                            name="towelCount"
-                                            min="1"
-                                            max="20"
-                                            value="1"
-                                            class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-2xl font-bold text-center bg-gray-50"
-                                            readonly
-                                            required
-                                        >
-                                    </div>
-
-                                    <!-- Increase Button -->
-                                    <button 
-                                        type="button" 
-                                        id="increaseBtn"
-                                        class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-lg hover:shadow-xl"
-                                    >
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="text-center mt-2 text-sm text-gray-500">
-                                    คลิกปุ่ม + หรือ - เพื่อปรับจำนวน
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bottom Row: Notes & Submit -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-                            <!-- Notes -->
-                            <div class="lg:col-span-2">
-                                <label for="notes" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    📝 หมายเหตุ (ไม่บังคับ)
-                                </label>
-                                <textarea 
-                                    id="notes" 
-                                    name="notes"
-                                    rows="3"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors resize-none"
-                                    placeholder="หมายเหตุเพิ่มเติม..."
-                                ></textarea>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div>
-                                <button 
-                                    type="submit" 
-                                    id="submitBtn"
-                                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl h-[84px] flex items-center justify-center"
-                                >
-                                    <span id="submitText">💾 บันทึกข้อมูล</span>
-                                    <span id="loadingText" class="loading">
-                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        กำลังบันทึก...
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Success/Error Messages -->
-                <div id="message" class="mx-6 mb-6 p-4 rounded-lg hidden">
-                    <p id="messageText" class="font-medium"></p>
-                </div>
-            </div>
-
-            <!-- Data/Tabs Section -->
-            <div class="max-w-4xl mx-auto mt-12 bg-white rounded-2xl shadow-xl">
-                <!-- Collapsible Data Header -->
-                <div id="dataHeader" class="flex justify-between items-center p-6 cursor-pointer">
-                    <h2 class="text-2xl font-bold text-gray-800">📊 ดูข้อมูลและรายงาน</h2>
-                    <svg id="dataChevron" class="w-6 h-6 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
-                
-                <!-- Collapsible Data Content -->
-                <div id="dataContent" class="p-8 hidden">
-                    <!-- Tab Headers -->
-                    <nav class="flex border-b mb-6">
-                        <button data-tab="records" class="tab-btn tab-active font-semibold py-3 px-6 border-b-2 transition-colors">
-                            📊 บันทึกล่าสุด
+                        <button id="changeLocationBtn" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-3 rounded-lg">
+                            เปลี่ยนสถานที่ / Change
                         </button>
-                        <button data-tab="summary" class="tab-btn font-semibold py-3 px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-colors">
-                            📊 รายงานสรุป
-                        </button>
-                    </nav>
+                    </div>
 
-                    <!-- Tab Panels -->
-                    <div>
-                        <!-- Records Panel -->
-                        <div id="panel-records" class="p-4">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-bold text-gray-800">รายการล่าสุด</h2>
-                                <button 
-                                    id="refreshBtn"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    🔄 รีเฟรช
-                                </button>
-                            </div>
-                            <!-- Daily Summary Container -->
-                            <div id="dailySummaryContainer" class="mb-6">
-                                <!-- Summary content will be injected here by JS -->
-                            </div>
-                            <div id="recordsContainer" class="space-y-4">
-                                <div class="text-center py-8 text-gray-500">
-                                    กำลังโหลดข้อมูล...
-                                </div>
-                            </div>
-                             <!-- Pagination Controls -->
-                            <div id="paginationContainer" class="flex justify-center items-center mt-6">
-                                <!-- Pagination controls will be injected here -->
-                            </div>
-                        </div>
-
-                        <!-- Summary Panel -->
-                        <div id="panel-summary" class="hidden p-4">
-                            <h3 class="text-xl font-bold text-gray-800 mb-6">📊 รายงานสรุป</h3>
-                            <!-- Report Options -->
-                            <div class="flex flex-col md:flex-row items-center gap-6 bg-gray-50 p-6 rounded-xl border">
-                                <!-- Radio buttons for type -->
-                                <div class="flex items-center gap-6">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="reportType" value="daily" class="form-radio h-5 w-5 text-indigo-600" checked>
-                                        <span class="text-gray-700 font-medium">รายวัน</span>
+                    <div class="p-6">
+                        <form id="towelForm" class="space-y-6">
+                            <input type="hidden" id="location" name="location">
+                            <!-- Top Row: Room Number & Customer Name -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Room Number -->
+                                <div class="relative">
+                                    <label for="roomNumber" class="block text-sm font-semibold text-gray-700 mb-1">
+                                        🏠 เลขห้อง / Room Number
                                     </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="reportType" value="monthly" class="form-radio h-5 w-5 text-indigo-600">
-                                        <span class="text-gray-700 font-medium">รายเดือน</span>
+                                    <input 
+                                        type="text" 
+                                        id="roomNumber" 
+                                        name="roomNumber"
+                                        class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-base"
+                                        placeholder="กรอกเลขห้อง / Enter Room No."
+                                        autocomplete="off"
+                                    >
+                                    <div id="usageInfoRoom" class="mt-1 text-xs text-gray-600 hidden"></div>
+                                    <div id="roomSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg hidden max-h-40 overflow-y-auto"></div>
+                                </div>
+
+                                <!-- Customer Name -->
+                                <div class="relative">
+                                    <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-1">
+                                        👤 ชื่อลูกค้า / Customer Name <span class="text-gray-500 text-xs">(ถ้ามี / Optional)</span>
                                     </label>
+                                    <input 
+                                        type="text" 
+                                        id="customerName" 
+                                        name="customerName"
+                                        class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors text-base"
+                                        placeholder="กรอกชื่อลูกค้า / Enter Name"
+                                         autocomplete="off"
+                                    >
+                                    <div id="usageInfoName" class="mt-1 text-xs text-gray-600 hidden"></div>
+                                    <div id="nameSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg hidden max-h-40 overflow-y-auto"></div>
                                 </div>
+                            </div>
 
-                                <!-- Date/Month Pickers -->
-                                <div class="flex-grow">
-                                    <input type="date" id="reportDate" class="w-full px-4 py-2 border rounded-lg">
-                                    <input type="month" id="reportMonth" class="w-full px-4 py-2 border rounded-lg hidden">
-                                </div>
-
-                                <!-- Get Report Button -->
+                            <!-- Middle Row: Status & Towel Count -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Status -->
                                 <div>
-                                    <button id="getSummaryBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full md:w-auto flex items-center justify-center min-w-[140px]">
-                                        🔍 ดูรายงาน
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        📋 สถานะ / Status
+                                    </label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <!-- Check In -->
+                                        <label class="relative cursor-pointer">
+                                            <input 
+                                                type="radio" 
+                                                name="status" 
+                                                value="Check In"
+                                                class="sr-only peer"
+                                                required
+                                            >
+                                            <div class="bg-white border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300">
+                                                <div class="text-xl mb-1">🏨</div>
+                                                <div class="font-semibold text-gray-700 peer-checked:text-green-700 text-sm">Check In</div>
+                                                <div class="text-xs text-gray-500">เข้าพัก</div>
+                                                <div class="absolute top-2 right-2 w-4 h-4 bg-green-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                                    <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <!-- Check Out -->
+                                        <label class="relative cursor-pointer">
+                                            <input 
+                                                type="radio" 
+                                                name="status" 
+                                                value="Check Out"
+                                                class="sr-only peer"
+                                                required
+                                            >
+                                            <div class="bg-white border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300">
+                                                <div class="text-xl mb-1">🚪</div>
+                                                <div class="font-semibold text-gray-700 peer-checked:text-blue-700 text-sm">Check Out</div>
+                                                <div class="text-xs text-gray-500">ออกจากห้อง</div>
+                                                <div class="absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full hidden peer-checked:flex items-center justify-center">
+                                                    <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Towel Count -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        🏊 จำนวนผ้าเช็ดตัว / Towel Count
+                                    </label>
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <button type="button" id="decreaseBtn" class="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-md">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                        </button>
+                                        <div class="flex-1 max-w-[120px]">
+                                            <input type="number" id="towelCount" name="towelCount" min="1" max="5" value="1" class="w-full px-2 py-2 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-xl font-bold text-center bg-gray-50" readonly required>
+                                        </div>
+                                        <button type="button" id="increaseBtn" class="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 shadow-md">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div class="text-center mt-1 text-xs text-gray-500">
+                                        คลิก + หรือ - / Click + or -
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Row: Notes & Submit -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                                <!-- Notes -->
+                                <div class="lg:col-span-2">
+                                    <label for="notes" class="block text-sm font-semibold text-gray-700 mb-1">
+                                        📝 หมายเหตุ / Note <span class="text-gray-500 text-xs">(ไม่บังคับ / Optional)</span>
+                                    </label>
+                                    <textarea id="notes" name="notes" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors resize-none" placeholder="หมายเหตุเพิ่มเติม / More details..."></textarea>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div>
+                                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg transition-colors duration-200 text-base shadow-lg hover:shadow-xl flex items-center justify-center">
+                                        <span id="submitText">💾 บันทึก / Save</span>
+                                        <span id="loadingText" class="loading">
+                                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            กำลังบันทึก / Saving...
+                                        </span>
                                     </button>
                                 </div>
                             </div>
-                            
-                            <!-- Summary Result Container -->
-                            <div id="summaryResultContainer" class="mt-6 min-h-[150px]">
-                                <div class="text-center py-8 text-gray-500">กรุณาเลือกวันที่หรือเดือน แล้วกด "ดูรายงาน" เพื่อแสดงข้อมูล</div>
-                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Success/Error Messages -->
+                    <div id="toastMessage" class="mx-6 mb-6 p-3 rounded-lg hidden">
+                        <p id="toastMessageText" class="font-medium text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- Records Panel -->
+                <div id="panel-records" class="hidden p-2 md:p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">รายการล่าสุด / Recent List</h2>
+                        <button id="refreshBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg transition-colors text-sm">
+                            🔄 รีเฟรช / Refresh
+                        </button>
+                    </div>
+                    <!-- Daily Summary Container -->
+                    <div id="dailySummaryContainer" class="mb-4">
+                        <!-- Summary content will be injected here by JS -->
+                    </div>
+                    <div id="recordsContainer" class="space-y-3">
+                        <div class="text-center py-6 text-gray-500">
+                            กำลังโหลดข้อมูล...
                         </div>
                     </div>
+                     <!-- Pagination Controls -->
+                    <div id="paginationContainer" class="flex justify-center items-center mt-4">
+                        <!-- Pagination controls will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Summary Panel -->
+                <div id="panel-summary" class="hidden p-2 md:p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">📊 รายงานสรุป / Summary Report</h3>
+                    <!-- Report Options -->
+                    <div class="flex flex-col md:flex-row items-center gap-4 bg-gray-50 p-4 rounded-xl border">
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="reportType" value="daily" class="form-radio h-4 w-4 text-indigo-600" checked><span class="text-gray-700">รายวัน / Daily</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="reportType" value="monthly" class="form-radio h-4 w-4 text-indigo-600"><span class="text-gray-700">รายเดือน / Monthly</span></label>
+                        </div>
+                        <div class="flex-grow"><input type="date" id="reportDate" class="w-full px-3 py-1.5 border rounded-lg text-sm"><input type="month" id="reportMonth" class="w-full px-3 py-1.5 border rounded-lg text-sm hidden"></div>
+                        <div><button id="getSummaryBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors w-full md:w-auto flex items-center justify-center text-sm min-w-[120px]">🔍 ดูรายงาน</button></div>
+                    </div>
+                    <div id="summaryResultContainer" class="mt-4 min-h-[120px]"><div class="text-center py-6 text-gray-500">กรุณาเลือกวันที่หรือเดือน</div></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+            <div class="modal-backdrop absolute inset-0"></div>
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10">
+                <form id="editForm">
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold mb-4">แก้ไขจำนวนผ้าเช็ดตัว</h3>
+                        <div class="mb-4">
+                            <p class="text-sm">เลขห้อง / Room: <span id="editRoomNumber" class="font-semibold"></span></p>
+                            <p class="text-sm">ชื่อ / Name: <span id="editCustomerName" class="font-semibold"></span></p>
+                        </div>
+                        <label for="editTowelCount" class="block text-sm font-semibold text-gray-700 mb-2">จำนวนใหม่ / New Count</label>
+                        <input type="number" id="editTowelCount" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg" min="1" max="5" required>
+                        <input type="hidden" id="editTimestamp">
+                    </div>
+                    <div class="bg-gray-100 px-6 py-3 flex justify-end gap-3 rounded-b-lg">
+                        <button type="button" id="cancelEditBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">ยกเลิก</button>
+                        <button type="submit" id="saveEditBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">บันทึก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Alert Modal -->
+        <div id="alertModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+            <div class="modal-backdrop absolute inset-0"></div>
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4 text-red-600">⚠️ แจ้งเตือน</h3>
+                    <p id="alertMessage" class="text-gray-700 whitespace-pre-wrap"></p>
+                </div>
+                <div class="bg-gray-100 px-6 py-3 flex justify-end rounded-b-lg">
+                    <button type="button" id="alertOkBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">ตกลง</button>
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -357,493 +316,36 @@
             const y = date.getFullYear();
             return `${d}/${m}/${y}`;
         }
-
-        function checkTowelLimit(identifier, by = 'room') {
-            if (!identifier) return 0;
-            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-            
-            let totalTowelsToday = 0;
+        
+        function checkDuplicateRecord(identifier, by = 'room', status) {
+            if (!identifier) return null;
+            const todayStr = new Date().toLocaleDateString('en-CA');
             const identifierIndex = by === 'room' ? 2 : 3;
+            const statusIndex = 4;
 
-            const todaysRecordsForIdentifier = allRecords.filter(record => {
+            const duplicate = allRecords.find(record => {
                 if (!record[0] || !record[identifierIndex]) return false;
                 try {
                     const [day, month, year] = record[0].split(' ')[0].split('/');
                     const recordDate = new Date(`${year}-${month}-${day}`);
                     const recordDateStr = recordDate.toLocaleDateString('en-CA');
-                    return recordDateStr === todayStr && record[identifierIndex].toString().trim() === identifier.trim();
+                    
+                    return recordDateStr === todayStr && 
+                           record[identifierIndex].toString().trim().toLowerCase() === identifier.trim().toLowerCase() &&
+                           record[statusIndex] === status;
                 } catch(e) {
                     return false;
                 }
             });
-
-            todaysRecordsForIdentifier.forEach(record => {
-                totalTowelsToday += parseInt(record[5], 10) || 0;
-            });
-
-            return totalTowelsToday;
+            return duplicate || null;
         }
 
-
-        document.getElementById('towelForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const submitText = document.getElementById('submitText');
-            const loadingText = document.getElementById('loadingText');
-            const formData = new FormData(this);
-            const roomNumber = formData.get('roomNumber').trim();
-            const customerName = formData.get('customerName').trim();
-            const newTowelCount = parseInt(formData.get('towelCount'));
-            
-            if (!roomNumber && !customerName) {
-                showMessage('❌ กรุณากรอกเลขห้อง/Locker หรือ ชื่อลูกค้า', 'error');
-                return;
-            }
-
-            const identifier = roomNumber || customerName;
-            const checkBy = roomNumber ? 'room' : 'name';
-
-            const existingTowels = checkTowelLimit(identifier, checkBy);
-            if (existingTowels + newTowelCount > 5) {
-                let message = `❌ จำกัดการเบิกได้ไม่เกิน 5 ผืนต่อวัน\n- ${identifier} เบิกไปแล้ว: ${existingTowels} ผืน`;
-                 if (existingTowels >= 5) {
-                    message = `❌ ${identifier} เบิกผ้าครบ 5 ผืนแล้วสำหรับวันนี้`;
-                }
-                showMessage(message, 'error', 10000);
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            submitText.style.display = 'none';
-            loadingText.classList.add('show');
-            
-            try {
-                const data = {
-                    action: 'addRecord',
-                    location: formData.get('location'),
-                    roomNumber, 
-                    customerName,
-                    status: formData.get('status'),
-                    towelCount: newTowelCount,
-                    notes: formData.get('notes') || ''
-                };
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'cors',
-                    headers: {'Content-Type': 'text/plain'},
-                    body: JSON.stringify(data)
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                if (result.success) {
-                    showMessage('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'success');
-                    document.getElementById('roomNumber').value = '';
-                    document.getElementById('customerName').value = '';
-                    document.getElementById('notes').value = '';
-                    loadRecords();
-                } else {
-                    throw new Error(result.error || 'เกิดข้อผิดพลาด');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitText.style.display = 'inline';
-                loadingText.classList.remove('show');
-            }
-        });
-
-        async function loadRecords() {
-            const container = document.getElementById('recordsContainer');
-            try {
-                const response = await fetch(SCRIPT_URL + '?action=getRecords', { method: 'GET', mode: 'cors' });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    const fetchedRecords = result.data;
-                    const newFirstRecordTimestamp = fetchedRecords.length > 0 ? fetchedRecords[0][0] : null;
-
-                    if (newFirstRecordTimestamp !== lastKnownFirstRecordTimestamp) {
-                        console.log('New data detected. Refreshing list.');
-                        lastKnownFirstRecordTimestamp = newFirstRecordTimestamp;
-                        allRecords = fetchedRecords;
-                        currentPage = 1;
-
-                        displayDailySummary(allRecords);
-                        updateRecordView();
-                    }
-                } else {
-                    throw new Error('ไม่สามารถโหลดข้อมูลได้');
-                }
-            } catch (error) {
-                console.error('Error during background refresh:', error);
-                if (!container.querySelector('div')) {
-                    container.innerHTML = `<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
-                }
-            }
-        }
-        
-        function updateRecordView() {
-            const startIndex = (currentPage - 1) * recordsPerPage;
-            const endIndex = startIndex + recordsPerPage;
-            const paginatedRecords = allRecords.slice(startIndex, endIndex);
-
-            displayRecords(paginatedRecords);
-            setupPagination();
-        }
-
-        function setupPagination() {
-            const container = document.getElementById('paginationContainer');
-            const totalPages = Math.ceil(allRecords.length / recordsPerPage);
-
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
-            }
-
-            const prevDisabled = currentPage === 1 ? 'disabled' : '';
-            const nextDisabled = currentPage === totalPages ? 'disabled' : '';
-
-            container.innerHTML = `
-                <button id="prevPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-l disabled:opacity-50 disabled:cursor-not-allowed" ${prevDisabled}>
-                    &laquo; ก่อนหน้า
-                </button>
-                <span class="px-4 py-2 bg-white text-gray-700 border-t border-b border-indigo-500">
-                    หน้า ${currentPage} จาก ${totalPages}
-                </span>
-                <button id="nextPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-r disabled:opacity-50 disabled:cursor-not-allowed" ${nextDisabled}>
-                    ถัดไป &raquo;
-                </button>
-            `;
-
-            document.getElementById('prevPageBtn').addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    updateRecordView();
-                }
-            });
-
-            document.getElementById('nextPageBtn').addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    updateRecordView();
-                }
-            });
-        }
-
-        function displayDailySummary(records) {
-            const container = document.getElementById('dailySummaryContainer');
-            const todayStr = getFormattedDate(new Date());
-
-            const todaysData = records.filter(record => record[0] && record[0].startsWith(todayStr));
-
-            if (todaysData.length === 0) {
-                container.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center text-gray-600"><p>ยังไม่มีรายการสำหรับวันนี้</p></div>`;
-                return;
-            }
-            
-            const createSummaryObject = () => ({
-                totalRecords: 0, checkInCount: 0, checkOutCount: 0,
-                checkInTowels: 0, checkOutTowels: 0, totalTowels: 0
-            });
-
-            const summary = {
-                TOTAL: createSummaryObject(),
-                HIHH: createSummaryObject(),
-                LOCKER: createSummaryObject()
+        function checkTowelUsage(identifier, by = 'room') {
+            const usage = {
+                'Check In': { count: 0, transactions: [] },
+                'Check Out': { count: 0, transactions: [] }
             };
-
-            todaysData.forEach(row => {
-                const location = row[1]; // HIHH or LOCKER
-                const status = row[4];
-                const towelCount = parseInt(row[5], 10) || 0;
-
-                const updateCounts = (obj) => {
-                    obj.totalRecords++;
-                    obj.totalTowels += towelCount;
-                    if (status === 'Check In') {
-                        obj.checkInCount++;
-                        obj.checkInTowels += towelCount;
-                    } else if (status === 'Check Out') {
-                        obj.checkOutCount++;
-                        obj.checkOutTowels += towelCount;
-                    }
-                };
-                
-                updateCounts(summary.TOTAL);
-                if (summary[location]) {
-                    updateCounts(summary[location]);
-                }
-            });
-            
-            const renderSummaryCard = (title, data, color) => {
-                if (data.totalRecords === 0) return '';
-                return `
-                    <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 ${color}">
-                        <h5 class="font-bold text-gray-800 text-lg">${title}</h5>
-                        <div class="text-sm text-gray-500 mt-2">รวม ${data.totalRecords} รายการ / ${data.totalTowels} ผืน</div>
-                        <div class="flex justify-around mt-3 text-center">
-                            <div>
-                                <div class="font-semibold text-green-700">Check In</div>
-                                <div class="text-md font-bold">${data.checkInTowels} <span class="text-xs">ผืน</span></div>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-blue-700">Check Out</div>
-                                <div class="text-md font-bold">${data.checkOutTowels} <span class="text-xs">ผืน</span></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            };
-
-            container.innerHTML = `
-                <div class="bg-gray-50 p-4 rounded-xl border">
-                    <h4 class="font-bold text-xl mb-3 text-gray-800">สรุปยอดวันนี้ (${todayStr})</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        ${renderSummaryCard('รวมทั้งหมด', summary.TOTAL, 'border-indigo-500')}
-                        ${renderSummaryCard('HIHH', summary.HIHH, 'border-blue-500')}
-                        ${renderSummaryCard('LOCKER', summary.LOCKER, 'border-green-500')}
-                    </div>
-                </div>`;
-        }
-
-        function displayRecords(records) {
-            const container = document.getElementById('recordsContainer');
-            if (!records || records.length === 0) {
-                container.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีข้อมูลสำหรับหน้านี้</div>';
-                return;
-            }
-
-            const groupedRecords = records.reduce((acc, record) => {
-                const dateKey = record[0].split(' ')[0];
-                if (!acc[dateKey]) {
-                    acc[dateKey] = [];
-                }
-                acc[dateKey].push(record);
-                return acc;
-            }, {});
-
-            const today = new Date();
-            const yesterday = new Date();
-            yesterday.setDate(today.getDate() - 1);
-
-            const todayStr = getFormattedDate(today);
-            const yesterdayStr = getFormattedDate(yesterday);
-
-            let html = '';
-            
-            for (const dateKey in groupedRecords) {
-                let dateLabel = dateKey;
-                if (dateKey === todayStr) dateLabel = `วันนี้ (${dateKey})`;
-                if (dateKey === yesterdayStr) dateLabel = `เมื่อวาน (${dateKey})`;
-
-                const recordsForDate = groupedRecords[dateKey];
-                const isExpanded = true;
-                
-                html += `
-                <div class="border rounded-lg overflow-hidden bg-white">
-                    <button class="accordion-header w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
-                        <span class="font-semibold text-gray-700">${dateLabel}</span>
-                        <svg class="accordion-chevron w-5 h-5 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div class="accordion-content overflow-hidden ${isExpanded ? '' : 'hidden'}">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="bg-gray-50 border-b">
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">เวลา</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">สถานที่</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">เลขห้อง</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">ชื่อลูกค้า</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">จำนวนผ้า</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">หมายเหตุ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${recordsForDate.map(record => `
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="px-4 py-3">${record[0].split(' ')[1] || ''}</td>
-                                            <td class="px-4 py-3">${record[1] || ''}</td>
-                                            <td class="px-4 py-3 font-medium">${record[2] || ''}</td>
-                                            <td class="px-4 py-3">${record[3] || ''}</td>
-                                            <td class="px-4 py-3">
-                                                <span class="px-2 py-1 rounded-full text-xs font-medium ${record[4] === 'Check In' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
-                                                    ${record[4] || ''}
-                                                </span>
-                                            </td>
-                                            <td class="px-4 py-3 text-center font-medium">${record[5] || ''}</td>
-                                            <td class="px-4 py-3">${record[6] || ''}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }
-
-            container.innerHTML = html;
-            addAccordionListeners();
-        }
-
-        function addAccordionListeners() {
-            document.querySelectorAll('.accordion-header').forEach(button => {
-                button.addEventListener('click', () => {
-                    const content = button.nextElementSibling;
-                    const chevron = button.querySelector('.accordion-chevron');
-                    content.classList.toggle('hidden');
-                    chevron.classList.toggle('rotate-180');
-                });
-            });
-        }
-
-        function showMessage(text, type, duration = 5000) {
-            const message = document.getElementById('message');
-            const messageText = document.getElementById('messageText');
-            messageText.textContent = text;
-            messageText.style.whiteSpace = 'pre-wrap';
-            message.className = `mx-6 mb-6 p-4 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            message.classList.remove('hidden');
-            setTimeout(() => {
-                message.classList.add('hidden');
-                messageText.style.whiteSpace = 'normal';
-            }, duration);
-        }
-
-        // --- Towel count controls ---
-        const towelCountInput = document.getElementById('towelCount');
-        document.getElementById('increaseBtn').addEventListener('click', () => {
-            if (parseInt(towelCountInput.value) < 20) towelCountInput.value = parseInt(towelCountInput.value) + 1;
-        });
-        document.getElementById('decreaseBtn').addEventListener('click', () => {
-            if (parseInt(towelCountInput.value) > 1) towelCountInput.value = parseInt(towelCountInput.value) - 1;
-        });
-
-        document.getElementById('refreshBtn').addEventListener('click', loadRecords);
-
-        // --- Collapsible Data Logic ---
-        document.getElementById('dataHeader').addEventListener('click', () => {
-            document.getElementById('dataContent').classList.toggle('hidden');
-            document.getElementById('dataChevron').classList.toggle('rotate-180');
-        });
-
-        // --- Tab Logic ---
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabPanels = {
-            records: document.getElementById('panel-records'),
-            summary: document.getElementById('panel-summary')
-        };
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                tabBtns.forEach(b => b.classList.remove('tab-active'));
-                this.classList.add('tab-active');
-                Object.values(tabPanels).forEach(p => p.classList.add('hidden'));
-                tabPanels[this.dataset.tab].classList.remove('hidden');
-            });
-        });
-
-        // --- Report Type Toggle Logic ---
-        const reportTypeRadios = document.querySelectorAll('input[name="reportType"]');
-        const reportDateInput = document.getElementById('reportDate');
-        const reportMonthInput = document.getElementById('reportMonth');
-        const summaryResultContainer = document.getElementById('summaryResultContainer');
-
-        reportTypeRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value === 'daily') {
-                    reportDateInput.classList.remove('hidden');
-                    reportMonthInput.classList.add('hidden');
-                } else {
-                    reportDateInput.classList.add('hidden');
-                    reportMonthInput.classList.remove('hidden');
-                }
-                summaryResultContainer.innerHTML = '<div class="text-center py-8 text-gray-500">กรุณาเลือกวันที่หรือเดือน แล้วกด "ดูรายงาน" เพื่อแสดงข้อมูล</div>';
-            });
-        });
-
-        // --- Summary Report Logic ---
-        document.getElementById('getSummaryBtn').addEventListener('click', getSummaryReport);
-
-        async function getSummaryReport() {
-            const reportType = document.querySelector('input[name="reportType"]:checked').value;
-            const dateInput = (reportType === 'daily') ? reportDateInput : reportMonthInput;
-            const dateValue = dateInput.value;
-            const getSummaryBtn = document.getElementById('getSummaryBtn');
-
-            if (!dateValue) {
-                summaryResultContainer.innerHTML = `<div class="p-4 rounded-lg bg-yellow-100 text-yellow-800">กรุณาเลือก${reportType === 'daily' ? 'วัน' : 'เดือน'}ที่ต้องการ</div>`;
-                return;
-            }
-            
-            getSummaryBtn.disabled = true;
-            getSummaryBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-            summaryResultContainer.innerHTML = '<div class="text-center py-8 text-gray-500">กำลังโหลดข้อมูลสรุป...</div>';
-
-            try {
-                const url = new URL(SCRIPT_URL);
-                url.searchParams.append('action', 'getSummary');
-                url.searchParams.append('type', reportType);
-                url.searchParams.append('date', dateValue);
-                
-                const response = await fetch(url, { method: 'GET', mode: 'cors' });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    displaySummary(result.data, reportType, dateValue);
-                } else {
-                    throw new Error(result.error || 'ไม่สามารถโหลดข้อมูลสรุปได้');
-                }
-            } catch (error) {
-                console.error('Error fetching summary:', error);
-                summaryResultContainer.innerHTML = `<div class="p-4 rounded-lg bg-red-100 text-red-800">เกิดข้อผิดพลาด: ${error.message}</div>`;
-            } finally {
-                getSummaryBtn.disabled = false;
-                getSummaryBtn.innerHTML = '🔍 ดูรายงาน';
-            }
-        }
-
-        function displaySummary(data, type, date) {
-            let title = '';
-            if (type === 'daily') {
-                const [year, month, day] = date.split('-');
-                title = `สรุปยอดประจำวันที่ ${day}/${month}/${year}`;
-            } else {
-                const [year, month] = date.split('-');
-                const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                title = `สรุปยอดประจำเดือน ${monthNames[parseInt(month, 10) - 1]} ${parseInt(year)}`;
-            }
-
-            if (data.totalRecords === 0) {
-                summaryResultContainer.innerHTML = `<div class="p-4 rounded-lg bg-blue-100 text-blue-800"><h4 class="font-bold text-lg mb-2">${title}</h4><p>ไม่พบข้อมูลในวันที่เลือก</p></div>`;
-                return;
-            }
-
-            summaryResultContainer.innerHTML = `
-                <div class="bg-gray-50 p-6 rounded-xl border">
-                    <h4 class="font-bold text-xl mb-4 text-gray-800">${title}</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                        <div class="bg-white p-4 rounded-lg shadow-sm"><div class="text-sm text-gray-500">จำนวนรายการทั้งหมด</div><div class="text-3xl font-bold text-indigo-600">${data.totalRecords}</div></div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm"><div class="text-sm text-gray-500">ผ้าเช็ดตัวทั้งหมด</div><div class="text-3xl font-bold text-indigo-600">${data.totalTowels}</div></div>
-                        <div></div>
-                        <div class="bg-green-50 p-4 rounded-lg border border-green-200"><div class="font-semibold text-green-800">Check In</div><div class="mt-2"><span class="text-2xl font-bold text-green-700">${data.checkInTowels}</span><span class="text-gray-600"> ผืน</span></div><div class="text-xs text-gray-500">จาก ${data.checkInCount} รายการ</div></div>
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200"><div class="font-semibold text-blue-800">Check Out</div><div class="mt-2"><span class="text-2xl font-bold text-blue-700">${data.checkOutTowels}</span><span class="text-gray-600"> ผืน</span></div><div class="text-xs text-gray-500">จาก ${data.checkOutCount} รายการ</div></div>
-                    </div>
-                </div>`;
-        }
-        
-        // --- Autocomplete Suggestions ---
-        function handleSuggestions(inputValue, by, suggestionsContainerId, inputId) {
-            const suggestionsContainer = document.getElementById(suggestionsContainerId);
-            if (!inputValue) {
-                suggestionsContainer.classList.add('hidden');
-                return;
-            }
+            if (!identifier) return usage;
 
             const todayStr = new Date().toLocaleDateString('en-CA');
             const identifierIndex = by === 'room' ? 2 : 3;
@@ -853,96 +355,433 @@
                 try {
                     const [day, month, year] = record[0].split(' ')[0].split('/');
                     const recordDate = new Date(`${year}-${month}-${day}`);
-                    return recordDate.toLocaleDateString('en-CA') === todayStr;
+                    return recordDate.toLocaleDateString('en-CA') === todayStr &&
+                           record[identifierIndex].toString().trim().toLowerCase() === identifier.trim().toLowerCase();
                 } catch (e) { return false; }
             });
 
-            const uniqueIdentifiers = [...new Set(todaysRecords.map(record => record[identifierIndex].toString().trim()))];
-            
-            const filteredSuggestions = uniqueIdentifiers.filter(item => 
-                item.toLowerCase().startsWith(inputValue.toLowerCase())
-            );
+            todaysRecords.forEach(record => {
+                const status = record[4];
+                const count = parseInt(record[5], 10) || 0;
+                const time = record[0].split(' ')[1] || '';
+                const location = record[1];
 
-            if (filteredSuggestions.length > 0) {
-                suggestionsContainer.innerHTML = filteredSuggestions.map(suggestion => 
-                    `<div class="p-2 hover:bg-gray-100 cursor-pointer suggestion-item">${suggestion}</div>`
-                ).join('');
-                suggestionsContainer.classList.remove('hidden');
+                if (usage.hasOwnProperty(status)) {
+                    usage[status].count += count;
+                    usage[status].transactions.push({ time, location, count });
+                }
+            });
 
-                suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const inputElement = document.getElementById(inputId);
-                        inputElement.value = item.textContent;
-                        suggestionsContainer.classList.add('hidden');
-                        inputElement.dispatchEvent(new Event('input')); 
-                    });
-                });
-            } else {
-                suggestionsContainer.classList.add('hidden');
-            }
+            return usage;
         }
-        
-        // --- Real-time Towel Limit Check ---
-        function handleTowelLimitCheck(identifier, by, infoElementId) {
-            const infoElement = document.getElementById(infoElementId);
-            if (!identifier) {
-                infoElement.classList.add('hidden');
+
+
+        document.getElementById('towelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const formData = new FormData(this);
+            const roomNumber = formData.get('roomNumber').trim();
+            const customerName = formData.get('customerName').trim();
+            const newTowelCount = parseInt(formData.get('towelCount'));
+            const status = formData.get('status');
+            
+            if (!roomNumber && !customerName) {
+                showAlert('กรุณากรอกเลขห้อง/Locker หรือ ชื่อลูกค้า');
+                return;
+            }
+
+            const identifier = roomNumber || customerName;
+            const checkBy = roomNumber ? 'room' : 'name';
+            
+            const duplicateRecord = checkDuplicateRecord(identifier, checkBy, status);
+            if (duplicateRecord) {
+                const timeDiff = duplicateRecord[0].split(' ')[1] || '';
+                showAlert(`มีรายการ '${status}' สำหรับ '${identifier}' นี้แล้วในวันนี้ (เวลา ${timeDiff})`);
                 return;
             }
             
-            const existingTowels = checkTowelLimit(identifier, by);
-            const remaining = 5 - existingTowels;
+            submitBtn.disabled = true;
+            submitBtn.querySelector('#submitText').style.display = 'none';
+            submitBtn.querySelector('#loadingText').classList.add('show');
+            
+            try {
+                const data = {
+                    action: 'addRecord',
+                    location: formData.get('location'), roomNumber, customerName,
+                    status: status, towelCount: newTowelCount,
+                    notes: formData.get('notes') || ''
+                };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    showToast('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'success');
+                    this.reset();
+                    document.getElementById('usageInfoRoom').classList.add('hidden');
+                    document.getElementById('usageInfoName').classList.add('hidden');
+                    loadRecords();
+                } else { throw new Error(result.error || 'เกิดข้อผิดพลาด'); }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.querySelector('#submitText').style.display = 'inline';
+                submitBtn.querySelector('#loadingText').classList.remove('show');
+            }
+        });
 
-            if (existingTowels > 0) {
-                infoElement.innerHTML = `(เบิกไปแล้ว ${existingTowels} ผืน, เบิกเพิ่มได้อีก ${Math.max(0, remaining)} ผืน)`;
-                infoElement.classList.remove('hidden');
+        async function loadRecords() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getRecords`, { method: 'GET', mode: 'cors' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const fetchedRecords = result.data;
+                    const newFirstRecordTimestamp = fetchedRecords.length > 0 ? fetchedRecords[0][0] : null;
 
-                if (remaining <= 0) {
-                    infoElement.classList.remove('text-gray-600', 'text-green-600');
-                    infoElement.classList.add('text-red-600');
-                } else {
-                    infoElement.classList.remove('text-gray-600', 'text-red-600');
-                    infoElement.classList.add('text-green-600');
-                }
+                    if (newFirstRecordTimestamp !== lastKnownFirstRecordTimestamp) {
+                        lastKnownFirstRecordTimestamp = newFirstRecordTimestamp;
+                        allRecords = fetchedRecords;
+                        currentPage = 1;
+                        displayDailySummary(allRecords);
+                        updateRecordView();
+                    }
+                } else { throw new Error('ไม่สามารถโหลดข้อมูลได้'); }
+            } catch (error) {
+                console.error('Error during refresh:', error);
+                document.getElementById('recordsContainer').innerHTML = `<div class="text-center py-6 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
+            }
+        }
+        
+        function updateRecordView() {
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const paginatedRecords = allRecords.slice(startIndex, startIndex + recordsPerPage);
+            displayRecords(paginatedRecords);
+            setupPagination();
+        }
+
+        function setupPagination() {
+            const container = document.getElementById('paginationContainer');
+            const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            container.innerHTML = `
+                <button id="prevPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-3 rounded-l text-sm disabled:opacity-50" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>
+                <span class="px-3 py-1 bg-white text-gray-700 border-t border-b border-indigo-500 text-sm">หน้า ${currentPage} / ${totalPages}</span>
+                <button id="nextPageBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-3 rounded-r text-sm disabled:opacity-50" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+
+            document.getElementById('prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; updateRecordView(); }});
+            document.getElementById('nextPageBtn').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; updateRecordView(); }});
+        }
+
+        function displayDailySummary(records) {
+            const container = document.getElementById('dailySummaryContainer');
+            const todayStr = getFormattedDate(new Date());
+            const todaysData = records.filter(r => r[0] && r[0].startsWith(todayStr));
+
+            if (todaysData.length === 0) {
+                container.innerHTML = `<div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center text-gray-600 text-sm"><p>ยังไม่มีรายการสำหรับวันนี้ / No records for today</p></div>`;
+                return;
+            }
+            
+            const createSummaryObject = () => ({ totalRecords: 0, checkInTowels: 0, checkOutTowels: 0, totalTowels: 0 });
+            const summary = { TOTAL: createSummaryObject(), HIHH: createSummaryObject(), LOCKER: createSummaryObject() };
+
+            todaysData.forEach(row => {
+                const [location, , , status, towelCount] = [row[1], row[2], row[3], row[4], parseInt(row[5], 10) || 0];
+                const updateCounts = (obj) => {
+                    obj.totalRecords++;
+                    obj.totalTowels += towelCount;
+                    if (status === 'Check In') obj.checkInTowels += towelCount; else obj.checkOutTowels += towelCount;
+                };
+                updateCounts(summary.TOTAL);
+                if (summary[location]) updateCounts(summary[location]);
+            });
+            
+            const renderSummaryCard = (title, data, color) => {
+                if (data.totalRecords === 0) return '';
+                return `
+                    <div class="bg-white p-3 rounded-lg shadow-sm border-t-4 ${color}">
+                        <h5 class="font-bold text-gray-800">${title}</h5>
+                        <div class="text-xs text-gray-500 mt-1">${data.totalRecords} รายการ / ${data.totalTowels} ผืน</div>
+                        <div class="flex justify-around mt-2 text-center text-xs">
+                            <div><div class="font-semibold text-green-700">Check In</div><div class="text-sm font-bold">${data.checkInTowels}</div></div>
+                            <div><div class="font-semibold text-blue-700">Check Out</div><div class="text-sm font-bold">${data.checkOutTowels}</div></div>
+                        </div>
+                    </div>`;
+            };
+
+            container.innerHTML = `
+                <div class="bg-gray-50 p-3 rounded-xl border">
+                    <h4 class="font-semibold text-lg mb-2 text-gray-800">สรุปยอดวันนี้ / Today's Summary (${todayStr})</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        ${renderSummaryCard('รวม / Total', summary.TOTAL, 'border-indigo-500')}
+                        ${renderSummaryCard('HIHH', summary.HIHH, 'border-blue-500')}
+                        ${renderSummaryCard('LOCKER', summary.LOCKER, 'border-green-500')}
+                    </div>
+                </div>`;
+        }
+
+        function displayRecords(records) {
+            const container = document.getElementById('recordsContainer');
+            if (!records || records.length === 0) {
+                container.innerHTML = '<div class="text-center py-6 text-gray-500 text-sm">ยังไม่มีข้อมูลสำหรับหน้านี้</div>';
+                return;
+            }
+
+            const groupedByDate = records.reduce((acc, r) => { (acc[r[0].split(' ')[0]] = acc[r[0].split(' ')[0]] || []).push(r); return acc; }, {});
+            const todayStr = getFormattedDate(new Date());
+            const yesterdayStr = getFormattedDate(new Date(Date.now() - 864e5));
+
+            container.innerHTML = Object.keys(groupedByDate).map(dateKey => {
+                let dateLabel = dateKey === todayStr ? `วันนี้ / Today (${dateKey})` : (dateKey === yesterdayStr ? `เมื่อวาน / Yesterday (${dateKey})` : dateKey);
+                return `
+                <div class="border rounded-lg overflow-hidden bg-white text-xs">
+                    <button class="accordion-header w-full flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100">
+                        <span class="font-semibold text-gray-700">${dateLabel}</span>
+                        <svg class="accordion-chevron w-4 h-4 text-gray-500 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50"><tr class="border-b">
+                                <th class="p-2 text-left font-semibold text-gray-600">เวลา</th><th class="p-2 text-left font-semibold text-gray-600">สถานที่</th>
+                                <th class="p-2 text-left font-semibold text-gray-600">เลขห้อง</th><th class="p-2 text-left font-semibold text-gray-600">ชื่อ</th>
+                                <th class="p-2 text-left font-semibold text-gray-600">สถานะ</th><th class="p-2 text-left font-semibold text-gray-600">จำนวน</th>
+                                <th class="p-2 text-left font-semibold text-gray-600">หมายเหตุ</th><th class="p-2"></th>
+                            </tr></thead>
+                            <tbody>${groupedByDate[dateKey].map(r => `<tr class="border-b hover:bg-gray-50">
+                                <td class="p-2">${r[0].split(' ')[1]||''}</td><td class="p-2">${r[1]||''}</td>
+                                <td class="p-2 font-medium">${r[2]||''}</td><td class="p-2">${r[3]||''}</td>
+                                <td class="p-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${r[4]==='Check In'?'bg-green-100 text-green-800':'bg-blue-100 text-blue-800'}">${r[4]||''}</span></td>
+                                <td class="p-2 text-center font-medium">${r[5]||''}</td><td class="p-2">${r[6]||''}</td>
+                                <td class="p-2 text-center"><button class="edit-btn text-blue-500 hover:text-blue-700" data-timestamp="${r[0]}" data-room="${r[2]}" data-name="${r[3]}" data-count="${r[5]}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
+                                </button></td>
+                            </tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('');
+            addAccordionListeners();
+        }
+
+        function addAccordionListeners() {
+            document.querySelectorAll('.accordion-header').forEach(btn => btn.addEventListener('click', () => {
+                btn.nextElementSibling.classList.toggle('hidden');
+                btn.querySelector('.accordion-chevron').classList.toggle('rotate-180');
+            }));
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', openEditModal));
+        }
+
+        function showToast(text, type, duration = 3000) {
+            const toastEl = document.getElementById('toastMessage');
+            const toastTextEl = document.getElementById('toastMessageText');
+            toastTextEl.textContent = text;
+            toastEl.className = `mx-6 mb-6 p-3 rounded-lg ${type==='success'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`;
+            toastEl.classList.remove('hidden');
+            setTimeout(() => { toastEl.classList.add('hidden'); }, duration);
+        }
+
+        function showAlert(message) {
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').classList.remove('hidden');
+        }
+
+        document.getElementById('alertOkBtn').addEventListener('click', () => {
+            document.getElementById('alertModal').classList.add('hidden');
+        });
+
+        document.getElementById('increaseBtn').addEventListener('click', () => { let v = parseInt(towelCount.value); if(v<5) towelCount.value = v + 1; });
+        document.getElementById('decreaseBtn').addEventListener('click', () => { let v = parseInt(towelCount.value); if(v>1) towelCount.value = v - 1; });
+        document.getElementById('refreshBtn').addEventListener('click', loadRecords);
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            this.classList.add('tab-active');
+            ['panel-form', 'panel-records', 'panel-summary'].forEach(p => document.getElementById(p).classList.add('hidden'));
+            document.getElementById(`panel-${this.dataset.tab}`).classList.remove('hidden');
+        }));
+
+        document.querySelectorAll('input[name="reportType"]').forEach(radio => radio.addEventListener('change', function() {
+            document.getElementById('reportDate').classList.toggle('hidden', this.value !== 'daily');
+            document.getElementById('reportMonth').classList.toggle('hidden', this.value !== 'monthly');
+        }));
+
+        document.getElementById('getSummaryBtn').addEventListener('click', async function() {
+            const type = document.querySelector('input[name="reportType"]:checked').value;
+            const dateVal = document.getElementById(type === 'daily' ? 'reportDate' : 'reportMonth').value;
+            if (!dateVal) { showAlert('กรุณาเลือกวันที่หรือเดือน'); return; }
+            this.disabled = true; this.innerHTML = '...';
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getSummary&type=${type}&date=${dateVal}`, { method: 'GET', mode: 'cors' });
+                if (!response.ok) throw new Error('Network response was not ok.');
+                const result = await response.json();
+                if (result.success) displaySummaryReport(result.data, type, dateVal);
+                else throw new Error(result.error);
+            } catch (err) { showAlert(`Error: ${err.message}`); } finally { this.disabled = false; this.innerHTML = '🔍 ดูรายงาน'; }
+        });
+
+        function displaySummaryReport(data, type, date) {
+            let title = '';
+            if (type === 'daily') { const [y,m,d] = date.split('-'); title = `สรุปวันที่ ${d}/${m}/${y}`; }
+            else { const [y,m] = date.split('-'); title = `สรุปเดือน ${m}/${y}`; }
+            const container = document.getElementById('summaryResultContainer');
+            if (data.totalRecords === 0) { container.innerHTML = `<div class="p-4 bg-blue-100 rounded-lg">${title}: ไม่พบข้อมูล</div>`; return; }
+            container.innerHTML = `<div class="bg-gray-50 p-4 rounded-xl border">
+                <h4 class="font-bold text-lg mb-2">${title}</h4>
+                <div class="grid grid-cols-2 gap-3 text-center text-sm">
+                    <div class="bg-white p-2 rounded-lg shadow-sm"><div>รวม</div><div class="text-xl font-bold text-indigo-600">${data.totalRecords}</div><div>รายการ</div></div>
+                    <div class="bg-white p-2 rounded-lg shadow-sm"><div>ผ้าทั้งหมด</div><div class="text-xl font-bold text-indigo-600">${data.totalTowels}</div><div>ผืน</div></div>
+                    <div class="bg-green-50 p-2 rounded-lg border border-green-200"><div>Check In</div><div class="text-lg font-bold text-green-700">${data.checkInTowels} ผืน</div><div class="text-xs">${data.checkInCount} รายการ</div></div>
+                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-200"><div>Check Out</div><div class="text-lg font-bold text-blue-700">${data.checkOutTowels} ผืน</div><div class="text-xs">${data.checkOutCount} รายการ</div></div>
+                </div></div>`;
+        }
+        
+        function handleSuggestions(inputValue, by, suggestionsContainerId, inputId) {
+            const container = document.getElementById(suggestionsContainerId);
+            if (!inputValue) { container.classList.add('hidden'); return; }
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const idx = by === 'room' ? 2 : 3;
+            const suggestions = [...new Set(allRecords.filter(r => {
+                if (!r[0] || !r[idx]) return false;
+                try { return new Date(r[0].split(' ')[0].split('/').reverse().join('-')).toLocaleDateString('en-CA') === todayStr; } catch(e) { return false; }
+            }).map(r => r[idx].toString().trim()))].filter(item => item.toLowerCase().startsWith(inputValue.toLowerCase()));
+            
+            if (suggestions.length > 0) {
+                container.innerHTML = suggestions.map(s => `<div class="p-2 hover:bg-gray-100 cursor-pointer text-sm suggestion-item">${s}</div>`).join('');
+                container.classList.remove('hidden');
+                container.querySelectorAll('.suggestion-item').forEach(item => item.addEventListener('click', () => {
+                    const input = document.getElementById(inputId);
+                    input.value = item.textContent;
+                    container.classList.add('hidden');
+                    input.dispatchEvent(new Event('input'));
+                }));
+            } else { container.classList.add('hidden'); }
+        }
+        
+        function updateUsageInfo(identifier, by, infoElId) {
+            const infoEl = document.getElementById(infoElId);
+            if (!identifier) {
+                infoEl.classList.add('hidden');
+                return;
+            }
+
+            const usage = checkTowelUsage(identifier, by);
+            const checkInData = usage['Check In'];
+            const checkOutData = usage['Check Out'];
+            
+            let parts = [];
+
+            if (checkInData.count > 0) {
+                const lastTx = checkInData.transactions[checkInData.transactions.length - 1];
+                const color = checkInData.count >= 5 ? 'text-red-600' : 'text-green-600';
+                parts.push(`<span class="${color}">Check In: ${checkInData.count}/5 (ล่าสุด ${lastTx.count} ผืน @${lastTx.location} ${lastTx.time})</span>`);
+            }
+
+            if (checkOutData.count > 0) {
+                const lastTx = checkOutData.transactions[checkOutData.transactions.length - 1];
+                const color = checkOutData.count >= 5 ? 'text-red-600' : 'text-green-600';
+                parts.push(`<span class="${color}">Check Out: ${checkOutData.count}/5 (ล่าสุด ${lastTx.count} ผืน @${lastTx.location} ${lastTx.time})</span>`);
+            }
+
+            if (parts.length > 0) {
+                infoEl.innerHTML = `(${parts.join(' | ')})`;
+                infoEl.classList.remove('hidden');
             } else {
-                 infoElement.classList.add('hidden');
+                infoEl.classList.add('hidden');
             }
         }
 
         document.getElementById('roomNumber').addEventListener('input', function() {
-            const value = this.value.trim();
-            handleTowelLimitCheck(value, 'room', 'towelLimitInfoRoom');
-            handleSuggestions(value, 'room', 'roomSuggestions', 'roomNumber');
+            const v = this.value.trim();
+            updateUsageInfo(v, 'room', 'usageInfoRoom');
+            handleSuggestions(v, 'room', 'roomSuggestions', 'roomNumber');
         });
         
         document.getElementById('customerName').addEventListener('input', function() {
-            const value = this.value.trim();
-            handleTowelLimitCheck(value, 'name', 'towelLimitInfoName');
-            handleSuggestions(value, 'name', 'nameSuggestions', 'customerName');
+            const v = this.value.trim();
+            updateUsageInfo(v, 'name', 'usageInfoName');
+            handleSuggestions(v, 'name', 'nameSuggestions', 'customerName');
         });
         
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.relative')) {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative')) {
                 document.getElementById('roomSuggestions').classList.add('hidden');
                 document.getElementById('nameSuggestions').classList.add('hidden');
             }
         });
 
+        // --- Edit Modal Logic ---
+        const editModal = document.getElementById('editModal');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editForm = document.getElementById('editForm');
+
+        function openEditModal(e) {
+            const btn = e.currentTarget;
+            document.getElementById('editRoomNumber').textContent = btn.dataset.room || '-';
+            document.getElementById('editCustomerName').textContent = btn.dataset.name || '-';
+            document.getElementById('editTowelCount').value = btn.dataset.count;
+            document.getElementById('editTimestamp').value = btn.dataset.timestamp;
+            editModal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+        }
+
+        cancelEditBtn.addEventListener('click', closeEditModal);
+        editModal.querySelector('.modal-backdrop').addEventListener('click', closeEditModal);
+
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const saveBtn = document.getElementById('saveEditBtn');
+            const timestamp = document.getElementById('editTimestamp').value;
+            const newTowelCount = parseInt(document.getElementById('editTowelCount').value);
+
+            if (newTowelCount > 5) {
+                showAlert(`แก้ไขไม่ได้! จำนวนผ้าต้องไม่เกิน 5 ผืน`);
+                return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'กำลังบันทึก...';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({ action: 'updateRecord', timestamp, newTowelCount })
+                });
+                if (!response.ok) throw new Error('Network error');
+                const result = await response.json();
+                if (result.success) {
+                    closeEditModal();
+                    showToast('✅ แก้ไขข้อมูลสำเร็จ!', 'success');
+                    loadRecords();
+                } else { throw new Error(result.error); }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาดในการแก้ไข: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'บันทึก';
+            }
+        });
+
 
         // --- Location Selection Logic ---
-        document.querySelectorAll('.location-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                selectedLocation = this.dataset.location;
-                document.getElementById('location').value = selectedLocation;
-                document.getElementById('selectedLocationText').textContent = selectedLocation;
-                
-                document.getElementById('locationSelection').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
-                
-                loadRecords();
-            });
-        });
+        document.querySelectorAll('.location-btn').forEach(btn => btn.addEventListener('click', function() {
+            selectedLocation = this.dataset.location;
+            document.getElementById('location').value = selectedLocation;
+            document.getElementById('selectedLocationText').textContent = selectedLocation;
+            document.getElementById('locationSelection').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            loadRecords();
+        }));
 
         document.getElementById('changeLocationBtn').addEventListener('click', () => {
             document.getElementById('locationSelection').classList.remove('hidden');
@@ -951,12 +790,7 @@
             lastKnownFirstRecordTimestamp = null;
         });
 
-        // For real-time data, automatically refresh records every 10 seconds.
-        setInterval(() => {
-            if (selectedLocation) { // Only refresh if a location is selected
-                loadRecords();
-            }
-        }, 10000); // Poll every 10 seconds
+        setInterval(() => { if (selectedLocation) loadRecords(); }, 10000);
 
     </script>
 </body>
