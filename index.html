@@ -578,14 +578,13 @@
             }));
             document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', openEditModal));
         }
-
+        
         function showToast(text, type, duration = 3000) {
-            const toastEl = document.getElementById('toastMessage');
-            const toastTextEl = document.getElementById('toastMessageText');
-            toastTextEl.textContent = text;
-            toastEl.className = `mx-6 mb-6 p-3 rounded-lg ${type==='success'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`;
-            toastEl.classList.remove('hidden');
-            setTimeout(() => { toastEl.classList.add('hidden'); }, duration);
+            const el = document.getElementById('toastMessage');
+            el.querySelector('#toastMessageText').textContent = text;
+            el.className = `mx-6 mb-6 p-3 rounded-lg ${type==='success'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => { el.classList.add('hidden'); }, duration);
         }
 
         function showAlert(message) {
@@ -633,6 +632,27 @@
             else { const [y,m] = date.split('-'); title = `สรุปเดือน ${m}/${y}`; }
             const container = document.getElementById('summaryResultContainer');
             if (data.totalRecords === 0) { container.innerHTML = `<div class="p-4 bg-blue-100 rounded-lg">${title}: ไม่พบข้อมูล</div>`; return; }
+            
+            const detailsHtml = Object.keys(data.details).sort().map(identifier => {
+                const transactions = data.details[identifier];
+                return `<div class="border rounded-lg overflow-hidden bg-white text-xs mb-2">
+                    <div class="p-2 bg-gray-100 font-semibold">${identifier}</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead><tr class="border-b">
+                                <th class="p-1.5 text-left font-semibold text-gray-600">เวลา</th><th class="p-1.5 text-left font-semibold text-gray-600">สถานที่</th>
+                                <th class="p-1.5 text-left font-semibold text-gray-600">สถานะ</th><th class="p-1.5 text-left font-semibold text-gray-600">จำนวน</th>
+                            </tr></thead>
+                            <tbody>${transactions.map(tx => `
+                                <tr class="border-b"><td class="p-1.5">${tx.time}</td><td class="p-1.5">${tx.location}</td>
+                                <td class="p-1.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tx.status==='Check In'?'bg-green-100 text-green-800':'bg-blue-100 text-blue-800'}">${tx.status}</span></td>
+                                <td class="p-1.5 text-center">${tx.count}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('');
+
             container.innerHTML = `<div class="bg-gray-50 p-4 rounded-xl border">
                 <h4 class="font-bold text-lg mb-2">${title}</h4>
                 <div class="grid grid-cols-2 gap-3 text-center text-sm">
@@ -640,7 +660,10 @@
                     <div class="bg-white p-2 rounded-lg shadow-sm"><div>ผ้าทั้งหมด</div><div class="text-xl font-bold text-indigo-600">${data.totalTowels}</div><div>ผืน</div></div>
                     <div class="bg-green-50 p-2 rounded-lg border border-green-200"><div>Check In</div><div class="text-lg font-bold text-green-700">${data.checkInTowels} ผืน</div><div class="text-xs">${data.checkInCount} รายการ</div></div>
                     <div class="bg-blue-50 p-2 rounded-lg border border-blue-200"><div>Check Out</div><div class="text-lg font-bold text-blue-700">${data.checkOutTowels} ผืน</div><div class="text-xs">${data.checkOutCount} รายการ</div></div>
-                </div></div>`;
+                </div>
+                <h5 class="font-bold text-md mt-4 mb-2">รายละเอียดตามเลขห้อง/ชื่อ</h5>
+                <div class="max-h-60 overflow-y-auto pr-2">${detailsHtml}</div>
+                </div>`;
         }
         
         function handleSuggestions(inputValue, by, suggestionsContainerId, inputId) {
