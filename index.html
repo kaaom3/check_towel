@@ -316,29 +316,6 @@
             const y = date.getFullYear();
             return `${d}/${m}/${y}`;
         }
-        
-        function checkDuplicateRecord(identifier, by = 'room', status) {
-            if (!identifier) return null;
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            const identifierIndex = by === 'room' ? 2 : 3;
-            const statusIndex = 4;
-
-            const duplicate = allRecords.find(record => {
-                if (!record[0] || !record[identifierIndex]) return false;
-                try {
-                    const [day, month, year] = record[0].split(' ')[0].split('/');
-                    const recordDate = new Date(`${year}-${month}-${day}`);
-                    const recordDateStr = recordDate.toLocaleDateString('en-CA');
-                    
-                    return recordDateStr === todayStr && 
-                           record[identifierIndex].toString().trim().toLowerCase() === identifier.trim().toLowerCase() &&
-                           record[statusIndex] === status;
-                } catch(e) {
-                    return false;
-                }
-            });
-            return duplicate || null;
-        }
 
         function checkTowelUsage(identifier, by = 'room') {
             const usage = {
@@ -385,6 +362,10 @@
             const newTowelCount = parseInt(formData.get('towelCount'));
             const status = formData.get('status');
             
+            if (!status) {
+                showAlert('กรุณาเลือกสถานะ (Check In หรือ Check Out)');
+                return;
+            }
             if (!roomNumber && !customerName) {
                 showAlert('กรุณากรอกเลขห้อง/Locker หรือ ชื่อลูกค้า');
                 return;
@@ -393,10 +374,16 @@
             const identifier = roomNumber || customerName;
             const checkBy = roomNumber ? 'room' : 'name';
             
-            const duplicateRecord = checkDuplicateRecord(identifier, checkBy, status);
-            if (duplicateRecord) {
-                const timeDiff = duplicateRecord[0].split(' ')[1] || '';
-                showAlert(`มีรายการ '${status}' สำหรับ '${identifier}' นี้แล้วในวันนี้ (เวลา ${timeDiff})`);
+            const usage = checkTowelUsage(identifier, checkBy);
+            const currentCountForStatus = usage[status].count;
+
+            if (currentCountForStatus + newTowelCount > 5) {
+                const remaining = 5 - currentCountForStatus;
+                let message = `ไม่สามารถบันทึกได้! โควต้าสำหรับ '${status}' ของ '${identifier}' เต็มแล้ว`;
+                if (remaining > 0) {
+                    message = `ไม่สามารถบันทึกได้!\n'${identifier}' เบิกผ้าสำหรับ '${status}' ไปแล้ว ${currentCountForStatus} ผืน\nสามารถเบิกเพิ่มได้อีกไม่เกิน ${remaining} ผืน`;
+                }
+                showAlert(message);
                 return;
             }
             
