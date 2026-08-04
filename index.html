@@ -445,7 +445,11 @@
                 } else { throw new Error('ไม่สามารถโหลดข้อมูลได้'); }
             } catch (error) {
                 console.error('Error during refresh:', error);
-                document.getElementById('recordsContainer').innerHTML = `<div class="text-center py-6 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
+                if (!allRecords || allRecords.length === 0) {
+                    document.getElementById('recordsContainer').innerHTML = `<div class="text-center py-6 text-red-500">ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
+                }
+                // If allRecords already has data, we silently ignore intermittent background polling errors 
+                // to prevent wiping the UI.
             }
         }
         
