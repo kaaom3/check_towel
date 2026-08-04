@@ -423,7 +423,7 @@
 
         async function loadRecords() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getRecords`, { method: 'GET', mode: 'cors' });
+                const response = await fetch(`${SCRIPT_URL}?action=getRecords&_t=${new Date().getTime()}`, { method: 'GET', mode: 'cors', cache: 'no-store' });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const result = await response.json();
                 
@@ -606,7 +606,7 @@
             if (!dateVal) { showAlert('กรุณาเลือกวันที่หรือเดือน'); return; }
             this.disabled = true; this.innerHTML = '...';
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getSummary&type=${type}&date=${dateVal}`, { method: 'GET', mode: 'cors' });
+                const response = await fetch(`${SCRIPT_URL}?action=getSummary&type=${type}&date=${dateVal}&_t=${new Date().getTime()}`, { method: 'GET', mode: 'cors', cache: 'no-store' });
                 if (!response.ok) throw new Error('Network response was not ok.');
                 const result = await response.json();
                 if (result.success) displaySummaryReport(result.data, type, dateVal);
