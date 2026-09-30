@@ -477,8 +477,14 @@
 
         function displayDailySummary(records) {
             const container = document.getElementById('dailySummaryContainer');
-            const todayStr = getFormattedDate(new Date());
-            const todaysData = records.filter(r => r[0] && r[0].startsWith(todayStr));
+            const today = new Date();
+            const todayStr = getFormattedDate(today);
+            const todayUnpaddedStr = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+            
+            const todaysData = records.filter(r => {
+                if (!r[0]) return false;
+                return r[0].startsWith(todayStr) || r[0].startsWith(todayUnpaddedStr);
+            });
 
             if (todaysData.length === 0) {
                 container.innerHTML = `<div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center text-gray-600 text-sm"><p>ยังไม่มีรายการสำหรับวันนี้ / No records for today</p></div>`;
@@ -531,11 +537,16 @@
             }
 
             const groupedByDate = records.reduce((acc, r) => { (acc[r[0].split(' ')[0]] = acc[r[0].split(' ')[0]] || []).push(r); return acc; }, {});
-            const todayStr = getFormattedDate(new Date());
-            const yesterdayStr = getFormattedDate(new Date(Date.now() - 864e5));
+            
+            const today = new Date();
+            const yesterday = new Date(Date.now() - 864e5);
+            const todayStr = getFormattedDate(today);
+            const todayUnpaddedStr = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+            const yesterdayStr = getFormattedDate(yesterday);
+            const yesterdayUnpaddedStr = `${yesterday.getDate()}/${yesterday.getMonth() + 1}/${yesterday.getFullYear()}`;
 
             container.innerHTML = Object.keys(groupedByDate).map(dateKey => {
-                let dateLabel = dateKey === todayStr ? `วันนี้ / Today (${dateKey})` : (dateKey === yesterdayStr ? `เมื่อวาน / Yesterday (${dateKey})` : dateKey);
+                let dateLabel = (dateKey === todayStr || dateKey === todayUnpaddedStr) ? `วันนี้ / Today (${dateKey})` : ((dateKey === yesterdayStr || dateKey === yesterdayUnpaddedStr) ? `เมื่อวาน / Yesterday (${dateKey})` : dateKey);
                 return `
                 <div class="border rounded-lg overflow-hidden bg-white text-xs">
                     <button class="accordion-header w-full flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100">
