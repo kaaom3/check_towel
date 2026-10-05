@@ -611,6 +611,10 @@
             this.classList.add('tab-active');
             ['panel-form', 'panel-records', 'panel-summary'].forEach(p => document.getElementById(p).classList.add('hidden'));
             document.getElementById(`panel-${this.dataset.tab}`).classList.remove('hidden');
+            
+            if (this.dataset.tab === 'records') {
+                loadRecords();
+            }
         }));
 
         document.querySelectorAll('input[name="reportType"]').forEach(radio => radio.addEventListener('change', function() {
@@ -826,7 +830,7 @@
             allRecords = [];
         });
 
-        setInterval(() => { if (selectedLocation) loadRecords(); }, 60000); // ลดความถี่การดึงข้อมูลเป็นทุกๆ 60 วินาที เพื่อป้องกัน Google Block
+        // Removed background polling to prevent Google Apps Script rate limits and submission errors
 
     </script>
 </body>
